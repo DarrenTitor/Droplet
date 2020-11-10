@@ -1,0 +1,30 @@
+#board{
+	border: solid aquamarine 5px;
+	margin-left: 30%;
+	margin-top: 3%;
+	width: 18%;
+	display: inline-block;
+	/*height: px;*/
+}
+
+#try2{
+	display: inline-block;
+	float: right;
+	margin-right: 10%;
+	margin-top: 10%;
+}
+body{
+	background-color: darkgrey;
+}
+
+#hold_slot{
+	display:inline-block;
+	float: right;
+	width: 10%;
+	border: tomato solid 3px;
+	font-size: 80px;
+}
+#hold_piece_id{
+	border: tomato solid 3px;
+	font-size: 80px;
+}
