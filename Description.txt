@@ -1,0 +1,28 @@
+piece_queue
+hold_queue
+
+yield不把this ghost换橙新快的
+只换curpiece
+
+generate：
+yield
+this ghost换橙新快的漂浮坐标
+update_ghost
+
+
+
+update ghost:
+wipe_ghost_piece
+更新ghost位置
+
+detect_harddrop：
+wipe旧漂浮块
+检查消行-》重画board/只画新块（这时ghost就是旧块下落的位置）
+generate_piece
+
+hold：
+若hold槽空：
+1 wipe 旧块 wipe_ghost_piece
+旧块入hold槽
+2 generate：
+3 print_piece print_ghost
