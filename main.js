@@ -6,11 +6,12 @@ class Game{
 	}
 	detect_input(){
 		
+		let need_to_refresh_board_3 = this.pieces_controller.apply_gravity(this.board_controller)
 		let need_to_refresh_board_1 = this.pieces_controller.detect_manual_lock(this.board_controller)
 		let need_to_refresh_board_2 = this.pieces_controller.detect_harddrop(this.board_controller)
 		
 		this.pieces_controller.detect_hold(this.board_controller)
-		if(need_to_refresh_board_1 || need_to_refresh_board_2){
+		if(need_to_refresh_board_1 || need_to_refresh_board_2 || need_to_refresh_board_3){
 			this.board_controller.print_ghost(this.pieces_controller.ghost)
 			this.board_controller.print_piece(this.pieces_controller.cur_piece)
 		}
@@ -254,8 +255,7 @@ class Piece{
 
 		if (_should_offset){
 		    let can_offset = this.try_offset(old_rotation_index, this.rotation_index, _board_controller)
-		// --        print(can_offset)
-		// --        print("old" .. old_rotation_index,this.rotation_index)
+
 		    
 		    if (!can_offset){
 		    	this.rotate_piece(!_is_clockwise, false, _board_controller)
@@ -296,6 +296,16 @@ class Pieces_Controller{
     this.hold_lock_last_frame = false
     this.hold_once_already = false
     this.hold_queue = []
+
+    this.gravity = 1 / 60
+    if(this.gravity>=1){
+    	this.gravity_timer = 1
+    }else{
+    	this.gravity_timer = 1 / this.gravity
+    }
+	
+
+
 	}
 	ghost_go_down_by_one(){
 		for (let coordinate of this.ghost){
@@ -338,9 +348,6 @@ class Pieces_Controller{
 				break
 			}
 		}
-
-		// console.log('ghost:' + this.ghost.center_coordinate.x + ',' + this.ghost.center_coordinate.y)
-
 
 	}
 
@@ -523,11 +530,6 @@ class Pieces_Controller{
 			return need_to_refresh_board
 		}
 
-		// --    #######call check line clear and pass the piece to the function
-		//     _board_controller:check_clear_line(this.cur_piece)
-		//     this.cur_piece = nil
-		//     this:generate_piece()
-		//     end
 	}
 
 	detect_harddrop(_board_controller){
@@ -691,41 +693,59 @@ class Pieces_Controller{
 		document.dispatchEvent(event);
 	}
 
+
+
+
+
+
+	apply_gravity(_board_controller){
+		//先不考虑重力为0
+		let need_to_refresh = false
+		this.gravity_timer -= 1
+
+		if(this.gravity <= 1){
+			if(this.gravity_timer <= 0){
+			
+				if (this.cur_piece.can_move_piece([0,-1],_board_controller)===true){
+		    			_board_controller.wipe_piece(this.cur_piece)
+		    			this.cur_piece.move_piece([0,-1])
+		                this.soft_timer_type ="soft"
+		                need_to_refresh = true
+		                
+		        }
+		        this.gravity_timer = 1/this.gravity
+		        return need_to_refresh
+	    	}
+	    	else{
+	    		return need_to_refresh
+	    	}
+		}
+		else{
+			if(this.gravity_timer <= 0){
+				for(let i=this.gravity; i>0; i++){
+					if (this.cur_piece.can_move_piece([0,-1],_board_controller)===true){
+			    			_board_controller.wipe_piece(this.cur_piece)
+			    			this.cur_piece.move_piece([0,-1])
+			                this.soft_timer_type ="soft"
+			                need_to_refresh = true
+			                
+			        }
+		    	}
+		        this.gravity_timer = 1
+		        return need_to_refresh
+	    	}
+	    	else{
+	    		return need_to_refresh
+	    	}
+		}
+
+	}
+
 }
 
 
 
 
-	
-
-
-
-
-
-
-
-// var board = document.getElementById('board');
-// board.width  = 400;
-// board.height = 800;
-// var row_num = 20
-// var col_num = 10
-// var ctx = board.getContext('2d');
-// ctx.strokeStyle = 'white';
-// var block_size = 40
-// ctx.lineWidth = 2;
-// for (const col_idx of Array(col_num).keys()){
-// 	ctx.beginPath();
-// 	ctx.moveTo(col_idx*block_size, 0);
-// 	ctx.lineTo(col_idx*block_size, row_num*block_size);
-// 	ctx.stroke(); 
-// }
-
-// for (const row_idx of Array(row_num).keys()){
-// 	ctx.beginPath();
-// 	ctx.moveTo(0, row_idx*block_size);
-// 	ctx.lineTo(col_num*block_size, row_idx*block_size);
-// 	ctx.stroke(); 
-// }
 
 class Board_Controller{
 	constructor(_row, _col, _html_id, _block_size = 30, ){
@@ -754,6 +774,9 @@ class Board_Controller{
 		// this.color.set('W', 'rgb(0,0,0)')
 		this.color.set(0, null)
 		this.color.set('G', 'grey')
+
+		this.ghost_alpha = 0.8
+
 	}
 	print(){
 		let newParent = document.createElement('p')
@@ -813,12 +836,7 @@ class Board_Controller{
 
 
 	print_grid(){
-		// console.log('grid')
-		// var canvas = document.getElementById('board');
-		// var ctx = this.canvas.getContext("2d");
-		
-		// this.canvas.width  = 400;
-		// this.canvas.height = 800;
+
 		for (var j = 0; j < this.row; j++){
     		for (var i = 0; i < this.col; i++){
 				// this.ctx.beginPath();
@@ -886,7 +904,7 @@ class Board_Controller{
 
 	print_ghost(_ghost){
 			console.log('printing ghost')
-		this.ctx.globalAlpha = 0.3
+		this.ctx.globalAlpha = this.ghost_alpha
 		var image = document.getElementById(this.color.get('G'))
 		
 		if(image.complete){
@@ -944,30 +962,7 @@ class Board_Controller{
 		}
 	}
 
-	// check_clear_line(_piece){
 
-	// 	const arrayColumn = (arr, n) => arr.map(x => x[n]);
-
-
-	// 	let piece_y_idx = []
-	// 	for (let block of _piece.blocks){
-	// 		piece_y_idx.push(block.coordinate.y)
-	// 	}
-	// 	let line_full_y_idx = []
-	// 	for (let y_idx of piece_y_idx){
-	// 		if((arrayColumn(this.board, y_idx).every(item => item != 0))){
-	// 			line_full_y_idx.push(y_idx)
-	// 		}
-	// 	}
-		
-
-	// 	let line_cleared_num = line_full_y_idx.length
-	// 	let piece_id = _piece.piece_id
-	// 	//////这里用来记录一些消行信息，以后用于统计
-
-
-		
-	// }
 
 	check_clear_line(_piece, _ghost){
 
@@ -1026,65 +1021,6 @@ class Board_Controller{
 
 
 
-// var b = new Board_Controller(22,10, 'board')
-// b.set_block(2,9,'T')
-// b.set_block(3,5,'I')
-// b.print_board()
-// block1 = new Block(3,4,'S')
-// b.print_block(block1)
-// b.try()
-// // piece1 = new Piece(5,5,'T')
-// // piece1.rotate_piece(true,true, b)
-// // b.print_piece(piece1)
-// b.print_grid()
-// var p = new Pieces_Controller()
-// p.yield('J')
-// b.print_piece(p.cur_piece)
-
-// document.getElementById('try2').appendChild(b.print())
-
-game = new Game('board')
-game.pieces_controller.generate_piece(game.board_controller)
-
-
-// document.onkeydown = function(e){
-//     var keycode = window.event ? window.event.keyCode : e.which;
-//     document.onkeyup = function(){
-//     	console.log('less than 200'); 
-//     };
-//     if(keycode == 40){
-//     	// var timer2 = null
-//         var timer = setTimeout(function(){
-//             // console.log('Down key held');
-            
-//             document.onkeyup = function(){
-//             	console.log('more than 200'); 
-//             };
-//         }, 200); 
-        
-//         document.onkeyup = function(){
-//             clearTimeout(timer);
-//             // console.log('Down key pressed');   
-//             // console.log('DAS');   
-//         }
-
-//         var timer2 = setTimeout(function(){
-//             // console.log('Down key held');
-//             console.log('ARR');
-//             document.onkeyup = function(){};
-//         }, 100); 
-//         document.onkeyup = function(){
-//             clearTimeout(timer2);
-//             // console.log('Down key pressed');   
-//             // console.log('DAS');   
-//         }
-//     }
-// };
-
-
-
-
-
 window.addEventListener("blur", handle_blur);
 
 function handle_blur(){
@@ -1116,16 +1052,9 @@ function handle_event_next_queue_change(e){
 	document.getElementById('next_slots_6').innerHTML = e.detail[5]
 }
 
-// handle_event_next_queue_change
 
-
-// document.addEventListener('event_hold_changed', handle_event_hold_changed, false);
-// function handle_event_hold_changed(e){
-// 	document.getElementById('hold_piece_id').innerHTML = e.detail
-// 	console.log('hold id!!')
-// }
-
-
+game = new Game('board')
+game.pieces_controller.generate_piece(game.board_controller)
 
 // var Q = kd.Key(81)
 var count = 0
@@ -1142,23 +1071,20 @@ function mainLoop(time){  // time in ms accurate to 1 micro second 1/1,000,000th
        deltaTime = (currentFrame - lastFrame) * frameRate;
        lastFrame = currentFrame;
    }
+
+
+
+   //game loop
+
    kd.tick();
    count++;
 
    game.detect_input()
-   // game.board_controller.print_piece(game.pieces_controller.cur_piece)
-
-    // /detect_rotation()
-// b.print_board()
-
-// p.detect_rotation()
+   //!!game loop
 
 
 
 
-
-    // document.getElementById('try3').innerHTML = deltaTime + '///' + kd.SHIFT.isDown() + kd.Q.isDown()
-    // console.log(deltaTime)
    requestAnimationFrame(mainLoop);
 }
 requestAnimationFrame(mainLoop);
@@ -1169,3 +1095,4 @@ setInterval(function(){
   fpsOut.innerHTML = count*2 + " fps";
   count = 0
 },500);
+
