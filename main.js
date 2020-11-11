@@ -9,9 +9,12 @@ class Game{
 		let need_to_refresh_board_3 = this.pieces_controller.apply_gravity(this.board_controller)
 		let need_to_refresh_board_1 = this.pieces_controller.detect_manual_lock(this.board_controller)
 		let need_to_refresh_board_2 = this.pieces_controller.detect_harddrop(this.board_controller)
+		let need_to_refresh_board_4 = this.pieces_controller.apply_lock_delay(this.board_controller)
+		
 		
 		this.pieces_controller.detect_hold(this.board_controller)
-		if(need_to_refresh_board_1 || need_to_refresh_board_2 || need_to_refresh_board_3){
+		if(need_to_refresh_board_1 || need_to_refresh_board_2 || 
+			need_to_refresh_board_3 || need_to_refresh_board_4){
 			this.board_controller.print_ghost(this.pieces_controller.ghost)
 			this.board_controller.print_piece(this.pieces_controller.cur_piece)
 		}
@@ -67,7 +70,7 @@ class Piece{
     this.piece_id = _piece_id
     this.blocks = [] 
     this.center_coordinate = {x:_center_x, y:_center_y}
-    // this.lock_delay_timer = 30
+    
     this.offset_data = null
 
     if(this.piece_id=="O"){
@@ -303,6 +306,10 @@ class Pieces_Controller{
     }else{
     	this.gravity_timer = 1 / this.gravity
     }
+
+    this.lock_delay = 40
+    this.lock_delay_timer = this.lock_delay
+    this.lock_delay_is_counting = false
 	
 
 
@@ -709,7 +716,6 @@ class Pieces_Controller{
 				if (this.cur_piece.can_move_piece([0,-1],_board_controller)===true){
 		    			_board_controller.wipe_piece(this.cur_piece)
 		    			this.cur_piece.move_piece([0,-1])
-		                this.soft_timer_type ="soft"
 		                need_to_refresh = true
 		                
 		        }
@@ -726,7 +732,6 @@ class Pieces_Controller{
 					if (this.cur_piece.can_move_piece([0,-1],_board_controller)===true){
 			    			_board_controller.wipe_piece(this.cur_piece)
 			    			this.cur_piece.move_piece([0,-1])
-			                this.soft_timer_type ="soft"
 			                need_to_refresh = true
 			                
 			        }
@@ -739,6 +744,50 @@ class Pieces_Controller{
 	    	}
 		}
 
+	}
+
+	apply_lock_delay(_board_controller){
+		let need_to_refresh = false
+		if(this.cur_piece.is_touching_ground(_board_controller)){
+			if(this.lock_delay_is_counting){
+
+				this.lock_delay_timer -= 1
+				if (this.lock_delay_timer <= 0){
+					//lock
+
+				for (let coordinate_tuple of this.ghost){
+		            _board_controller.board[coordinate_tuple[0]][coordinate_tuple[1]] = this.cur_piece.piece_id
+    			}
+    			_board_controller.wipe_piece(this.cur_piece)
+    			_board_controller.check_clear_line(this.cur_piece, this.ghost)
+    			this.generate_piece(_board_controller)
+
+
+
+
+
+
+
+
+					console.log('lock_here')
+					this.lock_delay_timer = this.lock_delay
+					this.lock_delay_is_counting = true
+					need_to_refresh = true
+					return need_to_refresh
+
+				}
+				this.lock_delay_is_counting = false
+				return need_to_refresh
+			}
+			else{
+				this.lock_delay_is_counting = true
+				this.lock_delay_timer -= 1
+				return need_to_refresh
+			}
+
+		}
+		return need_to_refresh
+		
 	}
 
 }
@@ -1081,7 +1130,7 @@ function mainLoop(time){  // time in ms accurate to 1 micro second 1/1,000,000th
 
    game.detect_input()
    //!!game loop
-
+   document.getElementById('lock_delay_timer').innerHTML = 'lock_delay: '+ game.pieces_controller.lock_delay_timer
 
 
 
