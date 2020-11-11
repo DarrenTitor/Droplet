@@ -349,8 +349,8 @@ class Pieces_Controller{
 	detect_rotation(_board_controller){
 		//detect rotate input
 		let need_to_refresh = false
-		let is_clockwise_down = kd.C.isDown()
-    	let is_counter_down = kd.X.isDown()
+		let is_clockwise_down = kd.X.isDown()
+    	let is_counter_down = kd.Z.isDown()
     	if(is_clockwise_down && is_counter_down){
         	this.is_rotated_last_frame = 0//???
         	need_to_refresh = false
@@ -564,7 +564,7 @@ class Pieces_Controller{
 
 	detect_hold(_board_controller){
 
-		if(kd.Z.isDown()){
+		if(kd.SHIFT.isDown()){
 			if(!this.hold_lock_last_frame){
 				console.log('here')
 				if(!this.hold_once_already){
@@ -728,7 +728,7 @@ class Pieces_Controller{
 // }
 
 class Board_Controller{
-	constructor(_row, _col, _html_id, _block_size = 40, ){
+	constructor(_row, _col, _html_id, _block_size = 30, ){
 		this.canvas = document.getElementById(_html_id);
 		this.ctx = this.canvas.getContext("2d");
 		this.row = _row
@@ -744,16 +744,16 @@ class Board_Controller{
     	//10行20列的空白
     	this.ghost_color = 'lavender'
     	this.color = new Map()
-		this.color.set('Z', 'rgb(255,0,0)')
-		this.color.set('S', 'rgb(0,255,0)')
-		this.color.set('J', 'rgb(0,60,255)')
-		this.color.set('I', 'rgb(0,240,255)')
-		this.color.set('L', 'rgb(255,180,0)')
-		this.color.set('O', 'rgb(255,240,0)')
-		this.color.set('T', 'rgb(220,0,255)')
+		this.color.set('Z', 'red')
+		this.color.set('S', 'green')
+		this.color.set('J', 'blue')
+		this.color.set('I', 'lightblue')
+		this.color.set('L', 'orange')
+		this.color.set('O', 'yellow')
+		this.color.set('T', 'purple')
 		// this.color.set('W', 'rgb(0,0,0)')
-		this.color.set(0, 'white')
-		this.color.set('G', 'rgb(125,125,125)')
+		this.color.set(0, null)
+		this.color.set('G', 'grey')
 	}
 	print(){
 		let newParent = document.createElement('p')
@@ -785,20 +785,25 @@ class Board_Controller{
 		this.canvas.height = this.row * this.block_size;
 		for (var j = 0; j < this.row; j++){
     		for (var i = 0; i < this.col; i++){
-    			
+    			console.log(this.color.get(this.board[i][j]))
+    			var image = document.getElementById(this.color.get(this.board[i][j]))
 
-				if (this.board[i][j]!=0){
-					this.ctx.fillStyle = this.color.get(this.board[i][j])
-					this.ctx.fillRect(i*this.block_size, (this.row-j-1)*this.block_size, this.block_size, this.block_size)
+
+				if(image!=null &&image.complete){
+					if (this.board[i][j]!=0){
+						this.ctx.drawImage(image,i*this.block_size, (this.row-j-1)*this.block_size)
+  					}
+  					console.log('print')
 				}
 
-				// this.ctx.beginPath();
-    			this.ctx.lineWidth = "2";
-				// this.ctx.strokeStyle = this.color.get(this.board[i][j])
-				this.ctx.strokeStyle = 'white'
-				this.ctx.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
-					this.block_size, this.block_size)
-				this.ctx.stroke();
+
+				
+
+    // 			this.ctx.lineWidth = "2";
+				// this.ctx.strokeStyle = 'white'
+				// this.ctx.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
+				// 	this.block_size, this.block_size)
+				// this.ctx.stroke();
 
     		}
     	}
@@ -823,6 +828,10 @@ class Board_Controller{
 				this.block_size, this.block_size)
 				this.ctx.stroke();
 
+
+
+
+
     		}
     	}
 
@@ -832,12 +841,15 @@ class Board_Controller{
 
 		let x = _block.coordinate.x
 		let y = _block.coordinate.y
-		let block_color = this.color.get(_block.block_id)
-		// console.log(x + ', ' + y )
-		// var canvas = document.getElementById('board');
-		// var ctx = this.canvas.getContext("2d");
-		this.ctx.fillStyle = block_color
-		this.ctx.fillRect(x*this.block_size, (this.row-y-1)*this.block_size, this.block_size, this.block_size)
+
+
+		var image = document.getElementById(this.color.get(_block.block_id))
+
+		if(image.complete){
+			this.ctx.drawImage(image,x*this.block_size, (this.row-y-1)*this.block_size)
+		}
+
+		
 
 
 	}
@@ -874,22 +886,40 @@ class Board_Controller{
 
 	print_ghost(_ghost){
 			console.log('printing ghost')
-		this.ctx.fillStyle = this.ghost_color
-		for (let coordinate_tuple of _ghost){
+		this.ctx.globalAlpha = 0.3
+		var image = document.getElementById(this.color.get('G'))
+		
+		if(image.complete){
+			for (let coordinate_tuple of _ghost){
 			// this.wipe_ghost_block(coordinate_tuple)
-			this.ctx.fillRect(coordinate_tuple[0]*this.block_size, (this.row-coordinate_tuple[1]-1)*this.block_size, this.block_size, this.block_size)
+				this.ctx.drawImage(image,coordinate_tuple[0]*this.block_size, (this.row-coordinate_tuple[1]-1)*this.block_size)			
 			}
+		}
+		this.ctx.globalAlpha = 1
 	}
+		
+
+		
+
+
+
+
+
+	
 
 	print_dropped_piece(_coordinate_tuple_set, _piece_id){
 
-			console.log('printing lite' + _coordinate_tuple_set)
-		this.ctx.fillStyle = this.color.get(_piece_id)
+		console.log('printing lite' + _coordinate_tuple_set)
+		var image = document.getElementById(this.color.get(_piece_id))
+
+		
 		for (let coordinate_tuple of _coordinate_tuple_set){
 			let x = coordinate_tuple[0]
 			let y = coordinate_tuple[1]
 			// this.wipe_ghost_block(coordinate_tuple)
-			this.ctx.fillRect(x*this.block_size, (this.row-y-1)*this.block_size, this.block_size, this.block_size)
+			if(image!= null && image.complete){
+			this.ctx.drawImage(image,x*this.block_size, (this.row-y-1)*this.block_size)
+		}
 			}
 	}
 
@@ -1086,7 +1116,7 @@ function handle_event_next_queue_change(e){
 	document.getElementById('next_slots_6').innerHTML = e.detail[5]
 }
 
-handle_event_next_queue_change
+// handle_event_next_queue_change
 
 
 // document.addEventListener('event_hold_changed', handle_event_hold_changed, false);
