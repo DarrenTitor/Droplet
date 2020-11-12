@@ -277,7 +277,7 @@ class Pieces_Controller{
 	this.ghost = []
 
 
-    this.DAS = 8
+    this.DAS = 9
     this.ARR = 0
     this.frame_timer = this.DAS
     this.timer_type = 0  //0, left, right
@@ -300,7 +300,7 @@ class Pieces_Controller{
     this.hold_once_already = false
     this.hold_queue = []
 
-    this.gravity = 1 / 60
+    this.gravity = 1 / 120
     if(this.gravity>=1){
     	this.gravity_timer = 1
     }else{
@@ -376,6 +376,7 @@ class Pieces_Controller{
 	            this.cur_piece.rotate_piece(true,true, _board_controller)///para += board
 	            this.is_rotated_last_frame="clockwise"//???
 	            this.update_ghost(_board_controller)
+	            this.lock_delay_timer = this.lock_delay
 		        need_to_refresh = true
 		        return need_to_refresh
 	        }
@@ -387,6 +388,7 @@ class Pieces_Controller{
 	            this.cur_piece.rotate_piece(false,true, _board_controller)///para += board
 	            this.is_rotated_last_frame="counter"//???
 	            this.update_ghost(_board_controller)
+	            this.lock_delay_timer = this.lock_delay
 		        need_to_refresh = true
 		        return need_to_refresh
 	        }
@@ -419,85 +421,190 @@ class Pieces_Controller{
 			this.frame_timer = this.DAS
 			//timer_type？？？？
 			return false
-		}
-		if (is_L_down){
-			if(this.timer_type!='left'){
-				if(this.cur_piece.can_move_piece([-1,0], _board_controller)===true){
-					_board_controller.wipe_piece(this.cur_piece)
-					this.cur_piece.move_piece([-1,0])
-					this.update_ghost(_board_controller)
-					this.timer_type = 'left'
-					need_to_refresh = true
-	        		return need_to_refresh
-				}
-				else if(this.cur_piece.can_move_piece([-1,0], _board_controller)=='edge_collide'){
-					//如果在最左，且第一次按左，DAS清零，且不算时间
-					this.frame_timer = this.DAS
-					this.timer_type = 0//？？？？？？
-					return need_to_refresh
-				}
-
 			}
-			else{
-				this.frame_timer -= 1
-				if(this.frame_timer<=0){
+		if(this.ARR != 0){
+			if (is_L_down){
+				if(this.timer_type!='left'){
 					if(this.cur_piece.can_move_piece([-1,0], _board_controller)===true){
 						_board_controller.wipe_piece(this.cur_piece)
 						this.cur_piece.move_piece([-1,0])
 						this.update_ghost(_board_controller)
-						this.frame_timer = this.ARR
+						this.timer_type = 'left'
+						this.lock_delay_timer = this.lock_delay
 						need_to_refresh = true
-	        			return need_to_refresh
+		        		return need_to_refresh
 					}
-					else if(this.cur_piece.can_move_piece([-1,0], _board_controller)=='edge_collide'){
-					//如果在最左，且不是第一次按左，DAS清零，且不算时间
+					else if(this.cur_piece.can_move_piece([-1,0], _board_controller)=='edge_collide'
+						|| this.cur_piece.can_move_piece([-1,0], _board_controller)=='block_collide'){
+						//如果在最左，且第一次按左，DAS清零，且不算时间
 						this.frame_timer = this.DAS
-						this.timer_type = 0
-						this.frame_timer = this.ARR
+						this.timer_type = 0//？？？？？？
 						return need_to_refresh
 					}
-				}
-			}
-		}
-		if (is_R_down){
-			if(this.timer_type!='right'){
-				if(this.cur_piece.can_move_piece([1,0], _board_controller)===true){
-					_board_controller.wipe_piece(this.cur_piece)
-					this.cur_piece.move_piece([1,0])
-					this.update_ghost(_board_controller)
-					this.timer_type = 'right'
-					need_to_refresh = true
-					return need_to_refresh
-				}
-				else if(this.cur_piece.can_move_piece([1,0], _board_controller)=='edge_collide'){
-					//如果在最右，且第一次按右，DAS清零，且不算时间
-					this.frame_timer = this.DAS
-					this.timer_type = 0//？？？？？？
-					return need_to_refresh
-				}
 
+				}
+				else{
+					this.frame_timer -= 1
+					if(this.frame_timer<=0){
+						if(this.cur_piece.can_move_piece([-1,0], _board_controller)===true){
+							_board_controller.wipe_piece(this.cur_piece)
+							this.cur_piece.move_piece([-1,0])
+							this.update_ghost(_board_controller)
+							this.frame_timer = this.ARR
+							this.lock_delay_timer = this.lock_delay
+							need_to_refresh = true
+		        			return need_to_refresh
+						}
+						else if(this.cur_piece.can_move_piece([-1,0], _board_controller)=='edge_collide'
+							|| this.cur_piece.can_move_piece([-1,0], _board_controller)=='block_collide'){
+						//如果在最左，且不是第一次按左，DAS清零，且不算时间
+							this.frame_timer = this.DAS
+							this.timer_type = 0
+							// this.frame_timer = this.ARR///?????????????????????
+							return need_to_refresh
+						}
+					}
+				}
 			}
-			else{
-				this.frame_timer -= 1
-				if(this.frame_timer<=0){
+			if (is_R_down){
+				if(this.timer_type!='right'){
 					if(this.cur_piece.can_move_piece([1,0], _board_controller)===true){
 						_board_controller.wipe_piece(this.cur_piece)
 						this.cur_piece.move_piece([1,0])
 						this.update_ghost(_board_controller)
-						this.frame_timer = this.ARR
+						this.timer_type = 'right'
+						this.lock_delay_timer = this.lock_delay
 						need_to_refresh = true
 						return need_to_refresh
 					}
-					else if(this.cur_piece.can_move_piece([1,0], _board_controller)=='edge_collide'){
-					//如果在最右，且不是第一次按右，DAS清零，且不算时间
+					else if(this.cur_piece.can_move_piece([1,0], _board_controller)=='edge_collide'
+						|| this.cur_piece.can_move_piece([1,0], _board_controller)=='block_collide'){
+						//如果在最右，且第一次按右，DAS清零，且不算时间
 						this.frame_timer = this.DAS
-						this.timer_type = 0
-						this.frame_timer = this.ARR
+						this.timer_type = 0//？？？？？？
 						return need_to_refresh
+					}
+
+				}
+				else{
+					this.frame_timer -= 1
+					if(this.frame_timer<=0){
+						if(this.cur_piece.can_move_piece([1,0], _board_controller)===true){
+							_board_controller.wipe_piece(this.cur_piece)
+							this.cur_piece.move_piece([1,0])
+							this.update_ghost(_board_controller)
+							this.frame_timer = this.ARR
+							this.lock_delay_timer = this.lock_delay
+							need_to_refresh = true
+							return need_to_refresh
+						}
+						else if(this.cur_piece.can_move_piece([1,0], _board_controller)=='edge_collide'
+							|| this.cur_piece.can_move_piece([1,0], _board_controller)=='block_collide'){
+						//如果在最右，且不是第一次按右，DAS清零，且不算时间
+							this.frame_timer = this.DAS
+							this.timer_type = 0
+							// this.frame_timer = this.ARR//??????????
+							return need_to_refresh
+						}
 					}
 				}
 			}
 		}
+
+		if(this.ARR == 0){
+
+			if (is_L_down){
+				if(this.timer_type!='left'){
+					if(this.cur_piece.can_move_piece([-1,0], _board_controller)===true){
+						_board_controller.wipe_piece(this.cur_piece)
+						this.cur_piece.move_piece([-1,0])
+						this.update_ghost(_board_controller)
+						this.timer_type = 'left'
+						this.lock_delay_timer = this.lock_delay
+						need_to_refresh = true
+		        		return need_to_refresh
+					}
+					else if(this.cur_piece.can_move_piece([-1,0], _board_controller)=='edge_collide'
+						|| this.cur_piece.can_move_piece([-1,0], _board_controller)=='block_collide'){
+						//如果在最左，且第一次按左，DAS清零，且不算时间
+						this.frame_timer = this.DAS
+						this.timer_type = 0//？？？？？？
+						return need_to_refresh
+					}
+
+				}
+				else{
+					this.frame_timer -= 1
+					if(this.frame_timer<=0){
+						while(this.cur_piece.can_move_piece([-1,0], _board_controller)===true){
+							_board_controller.wipe_piece(this.cur_piece)
+							this.cur_piece.move_piece([-1,0])
+							need_to_refresh = true
+						}
+							this.update_ghost(_board_controller)
+							this.frame_timer = this.DAS
+							this.lock_delay_timer = this.lock_delay
+							need_to_refresh = true
+					
+						if(this.cur_piece.can_move_piece([-1,0], _board_controller)=='edge_collide'
+							|| this.cur_piece.can_move_piece([-1,0], _board_controller)=='block_collide'){
+						//如果在最左，且不是第一次按左，DAS清零，且不算时间
+							this.frame_timer = this.DAS
+							this.timer_type = 0
+							return need_to_refresh
+						}
+					}
+				}
+			}
+
+			
+			if (is_R_down){
+				if(this.timer_type!='right'){
+					if(this.cur_piece.can_move_piece([1,0], _board_controller)===true){
+						_board_controller.wipe_piece(this.cur_piece)
+						this.cur_piece.move_piece([1,0])
+						this.update_ghost(_board_controller)
+						this.timer_type = 'right'
+						this.lock_delay_timer = this.lock_delay
+						need_to_refresh = true
+		        		return need_to_refresh
+					}
+					else if(this.cur_piece.can_move_piece([1,0], _board_controller)=='edge_collide'
+						|| this.cur_piece.can_move_piece([1,0], _board_controller)=='block_collide'){
+						//如果在最左，且第一次按左，DAS清零，且不算时间
+						this.frame_timer = this.DAS
+						this.timer_type = 0//？？？？？？
+						return need_to_refresh
+					}
+
+				}
+				else{
+					this.frame_timer -= 1
+					if(this.frame_timer<=0){
+						while(this.cur_piece.can_move_piece([1,0], _board_controller)===true){
+							_board_controller.wipe_piece(this.cur_piece)
+							this.cur_piece.move_piece([1,0])
+							need_to_refresh = true
+						}
+							this.update_ghost(_board_controller)
+							this.frame_timer = this.DAS
+							this.lock_delay_timer = this.lock_delay
+							need_to_refresh = true
+						
+						if(this.cur_piece.can_move_piece([1,0], _board_controller)=='edge_collide'
+							|| this.cur_piece.can_move_piece([1,0], _board_controller)=='block_collide'){
+						//如果在最左，且不是第一次按左，DAS清零，且不算时间
+							this.frame_timer = this.DAS
+							this.timer_type = 0
+							return need_to_refresh
+						}
+					}
+				}
+			}
+		}
+	
+
+		
 
 		if(!(is_L_down||is_R_down)){
 			this.frame_timer = this.DAS
