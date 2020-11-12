@@ -665,6 +665,7 @@ class Pieces_Controller{
 
     			this.harddrop_lock_last_frame = true
     			need_to_refresh_board = true
+    			this.lock_delay_timer = this.lock_delay
     			return need_to_refresh_board
 
 
@@ -682,13 +683,13 @@ class Pieces_Controller{
 
 		if(kd.SHIFT.isDown()){
 			if(!this.hold_lock_last_frame){
-				console.log('here')
+				// console.log('here')
 				if(!this.hold_once_already){
 					if (this.hold_queue.length == 0){
 					_board_controller.wipe_piece(this.cur_piece)
 					_board_controller.wipe_ghost_piece(this.ghost)
 					this.hold_queue.push(this.cur_piece.piece_id)
-					console.log(this.hold_queue)
+					// console.log(this.hold_queue)
 					this.generate_piece(_board_controller)
 					_board_controller.print_ghost(this.ghost)
 					_board_controller.print_piece(this.cur_piece)
@@ -797,7 +798,7 @@ class Pieces_Controller{
 			this.ghost.push([block.coordinate.x, block.coordinate.y])
 		}
 		this.update_ghost(_board_controller)
-		console.log('ghost of new block updated')
+		// console.log('ghost of new block updated')
 		_board_controller.print_piece(this.cur_piece)
 		_board_controller.print_ghost(this.ghost)
 
@@ -876,7 +877,7 @@ class Pieces_Controller{
 
 
 
-					console.log('lock_here')
+					// console.log('lock_here')
 					this.lock_delay_timer = this.lock_delay
 					this.lock_delay_is_counting = true
 					need_to_refresh = true
@@ -964,7 +965,7 @@ class Board_Controller{
 		this.canvas.height = this.row * this.block_size;
 		for (var j = 0; j < this.row; j++){
     		for (var i = 0; i < this.col; i++){
-    			console.log(this.color.get(this.board[i][j]))
+    			// console.log(this.color.get(this.board[i][j]))
     			var image = document.getElementById(this.color.get(this.board[i][j]))
 
 
@@ -972,7 +973,7 @@ class Board_Controller{
 					if (this.board[i][j]!=0){
 						this.ctx.drawImage(image,i*this.block_size, (this.row-j-1)*this.block_size)
   					}
-  					console.log('print')
+  					// console.log('print')
 				}
 
 
@@ -1059,7 +1060,7 @@ class Board_Controller{
 	}
 
 	print_ghost(_ghost){
-			console.log('printing ghost')
+			// console.log('printing ghost')
 		this.ctx.globalAlpha = this.ghost_alpha
 		var image = document.getElementById(this.color.get('G'))
 		
@@ -1083,7 +1084,7 @@ class Board_Controller{
 
 	print_dropped_piece(_coordinate_tuple_set, _piece_id){
 
-		console.log('printing lite' + _coordinate_tuple_set)
+		// console.log('printing lite' + _coordinate_tuple_set)
 		var image = document.getElementById(this.color.get(_piece_id))
 
 		
@@ -1098,7 +1099,7 @@ class Board_Controller{
 	}
 
 	wipe_piece(_piece){
-		console.log('wipe piece at' + _piece.center_coordinate.x + ', ' +_piece.center_coordinate.y)
+		// console.log('wipe piece at' + _piece.center_coordinate.x + ', ' +_piece.center_coordinate.y)
 		if (_piece!=null){
 			// console.log('wipe_piece')
 			for (let block of _piece.blocks){
@@ -1143,10 +1144,24 @@ class Board_Controller{
 			}
 		}
 
-
+		let is_spin_occurred = false
+		//判断是否发生spin
+		if(!((_piece.can_move_piece([0,1],this)===true || _piece.can_move_piece([-1,0],this)===true
+					|| _piece.can_move_piece([1,0],this))===true )){
+			is_spin_occurred = true
+		}
 		let line_cleared_num = line_full_y_idx.length
 		let piece_id = _piece.piece_id
 		//////这里用来记录一些消行信息，以后用于统计
+		console.log('spin:' + is_spin_occurred)
+		if(is_spin_occurred && piece_id=='T'){
+			var event = new CustomEvent("event_tspin_occurred", { "detail": line_cleared_num });
+			document.dispatchEvent(event);
+		}
+		
+
+
+
 
 		for(let i=0; i<line_cleared_num; i++){
 			cleared_board_transposed.push(new Array(this.col).fill(0))
@@ -1181,20 +1196,20 @@ window.addEventListener("blur", handle_blur);
 
 function handle_blur(){
 	document.getElementById('focus_message').innerHTML = 'lost focus!'
-	console.log('lost focus!')
+	// console.log('lost focus!')
 }
 
 window.addEventListener("focus", handle_focus);
 
 function handle_focus(){
 	document.getElementById('focus_message').innerHTML = 'focus!'
-	console.log('focus!')
+	// console.log('focus!')
 }
 
 document.addEventListener('event_hold_changed', handle_event_hold_changed, false);
 function handle_event_hold_changed(e){
 	document.getElementById('hold_piece_id').innerHTML = e.detail
-	console.log('hold id!!')
+	// console.log('hold id!!')
 }
 
 
@@ -1206,6 +1221,13 @@ function handle_event_next_queue_change(e){
 	document.getElementById('next_slots_4').innerHTML = e.detail[3]
 	document.getElementById('next_slots_5').innerHTML = e.detail[4]
 	document.getElementById('next_slots_6').innerHTML = e.detail[5]
+}
+
+document.addEventListener('event_tspin_occurred', handle_event_tspin_occurred, false);
+function handle_event_tspin_occurred(e){
+	document.getElementById('spin_callback').innerHTML = 'T spin' + e.detail
+	setTimeout(function(){document.getElementById('spin_callback').innerHTML = ''}, 1200);
+	// console.log('hold id!!')
 }
 
 

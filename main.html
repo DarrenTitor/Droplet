@@ -7,11 +7,13 @@
 	<link rel="stylesheet" type="text/css" href="somestyle.css">
 </head>
 <body>
-<h3 id="focus_message"></h3>
-<h3 id="lock_delay_timer"></h3>
+<div class = "blur"></div>
+
+
 <div id="main">
+	<h3 id="focus_message"></h3>
+	<h3 id="lock_delay_timer"></h3>
 	<canvas id="board"></canvas>
-	<h1 id="try2"></h1>
 	<div id="hold_slot">
 		<div id="hold_title">HOLD</div>
 		<div id="hold_piece_id">NO_HOLD</div>
@@ -27,23 +29,26 @@
 		</div>
 	</div>
 	</div>
+	<div id="spin_callback"></div>
 	
+<div id="blocks">
+	<img id="black" src="pic/black_re.png">
+	<img id="blue" src="pic/dark_blue_re.png">
+	<img id="green" src="pic/green_re.png">
+	<img id="grey" src="pic/grey_re.png">
+	<img id="lightblue" src="pic/light_blue_re.png">
+	<img id="orange" src="pic/orange_re.png">
+	<img id="purple" src="pic/purple_re.png">
+	<img id="red" src="pic/red_re.png">
+	<img id="yellow" src="pic/yellow_re.png">
 </div>
-<img id="black" src="pic/black_re.png">
-<img id="blue" src="pic/dark_blue_re.png">
-<img id="green" src="pic/green_re.png">
-<img id="grey" src="pic/grey_re.png">
-<img id="lightblue" src="pic/light_blue_re.png">
-<img id="orange" src="pic/orange_re.png">
-<img id="purple" src="pic/purple_re.png">
-<img id="red" src="pic/red_re.png">
-<img id="yellow" src="pic/yellow_re.png">
 
 <!-- <h1 id="try"></h1> -->
 
 
 
-<h1 id="fps"></h1>
+<h4 id="fps"></h4>
+</div>
 
 <script src="keydrown.js"></script>
 <!-- <script src="Block.js"></script> -->
