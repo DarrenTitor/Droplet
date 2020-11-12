@@ -7,13 +7,13 @@ class Game{
 	detect_input(){
 		
 		let need_to_refresh_board_3 = this.pieces_controller.apply_gravity(this.board_controller)
-		let need_to_refresh_board_1 = this.pieces_controller.detect_manual_lock(this.board_controller)
+		// let need_to_refresh_board_1 = this.pieces_controller.detect_manual_lock(this.board_controller)
 		let need_to_refresh_board_2 = this.pieces_controller.detect_harddrop(this.board_controller)
 		let need_to_refresh_board_4 = this.pieces_controller.apply_lock_delay(this.board_controller)
 		
 		
 		this.pieces_controller.detect_hold(this.board_controller)
-		if(need_to_refresh_board_1 || need_to_refresh_board_2 || 
+		if(need_to_refresh_board_2 || 
 			need_to_refresh_board_3 || need_to_refresh_board_4){
 			this.board_controller.print_ghost(this.pieces_controller.ghost)
 			this.board_controller.print_piece(this.pieces_controller.cur_piece)
@@ -613,43 +613,51 @@ class Pieces_Controller{
 		}
 	}
 
-	detect_manual_lock(_board_controller){
-		let need_to_refresh_board = false
-		if(kd.SPACE.isDown()){
-			if(!this.manual_lock_last_frame){
-				for (let block of this.cur_piece.blocks){
-		            let temp_x = block.coordinate.x
-		            let temp_y = block.coordinate.y
-		            _board_controller.board[temp_x][temp_y] = block.block_id
+	// detect_manual_lock(_board_controller){
+	// 	let need_to_refresh_board = false
+	// 	if(kd.SPACE.isDown()){
+	// 		if(!this.manual_lock_last_frame){
+	// 			for (let block of this.cur_piece.blocks){
+	// 	            let temp_x = block.coordinate.x
+	// 	            let temp_y = block.coordinate.y
+	// 	            _board_controller.board[temp_x][temp_y] = block.block_id
 	        
-    			}
+ //    			}
 
-    			_board_controller.check_clear_line(this.cur_piece, this.ghost)
+ //    			_board_controller.check_clear_line(this.cur_piece, this.ghost)
     			
-    			// this.cur_piece = null
-    			// _board_controller.print_dropped_piece(this.cur_piece)
-    			delete this.cur_piece///??????????
-    			this.generate_piece(_board_controller)
-    			need_to_refresh_board = true
-    			this.manual_lock_last_frame = true
-    			return need_to_refresh_board
+ //    			// this.cur_piece = null
+ //    			// _board_controller.print_dropped_piece(this.cur_piece)
+ //    			delete this.cur_piece///??????????
+ //    			this.generate_piece(_board_controller)
+ //    			need_to_refresh_board = true
+ //    			this.manual_lock_last_frame = true
+ //    			return need_to_refresh_board
 
 
-			}
-			this.manual_lock_last_frame = true
-			return need_to_refresh_board
-		}
-		else{
-			this.manual_lock_last_frame = false
-			return need_to_refresh_board
-		}
+	// 		}
+	// 		this.manual_lock_last_frame = true
+	// 		return need_to_refresh_board
+	// 	}
+	// 	else{
+	// 		this.manual_lock_last_frame = false
+	// 		return need_to_refresh_board
+	// 	}
 
-	}
+	// }
 
 	detect_harddrop(_board_controller){
 		let need_to_refresh_board = false
 		if(kd.I.isDown()){
 			if(!this.harddrop_lock_last_frame){
+				let is_spin_occurred = false
+				//判断是否发生spin
+				if(!((this.cur_piece.can_move_piece([0,1],_board_controller)===true || this.cur_piece.can_move_piece([-1,0],_board_controller)===true
+							|| this.cur_piece.can_move_piece([1,0],_board_controller))===true )){
+					is_spin_occurred = true
+				}
+
+
 				for (let coordinate_tuple of this.ghost){
 		            _board_controller.board[coordinate_tuple[0]][coordinate_tuple[1]] = this.cur_piece.piece_id
 	        
@@ -657,7 +665,23 @@ class Pieces_Controller{
     			_board_controller.wipe_piece(this.cur_piece)
     			// _board_controller.print_dropped_piece(this.ghost, this.cur_piece.piece_id)//画锁定的块要用到ghost的坐标
 
-    			_board_controller.check_clear_line(this.cur_piece, this.ghost)
+    			let line_cleared_num = _board_controller.check_clear_line(this.cur_piece, this.ghost)
+
+
+
+    			let piece_id = this.cur_piece.piece_id
+				//////这里用来记录一些消行信息，以后用于统计
+				console.log('spin:' + is_spin_occurred)
+				if(is_spin_occurred && piece_id=='T'){
+					var event = new CustomEvent("event_tspin_occurred", { "detail": line_cleared_num });
+					document.dispatchEvent(event);
+				}
+
+
+
+
+
+
     			
     			// this.cur_piece = null
     			// _board_controller.print_dropped_piece(this.cur_piece)
@@ -863,11 +887,35 @@ class Pieces_Controller{
 				if (this.lock_delay_timer <= 0){
 					//lock
 
+				let is_spin_occurred = false
+				//判断是否发生spin
+				if(!((this.cur_piece.can_move_piece([0,1],_board_controller)===true || this.cur_piece.can_move_piece([-1,0],_board_controller)===true
+							|| this.cur_piece.can_move_piece([1,0],_board_controller))===true )){
+					is_spin_occurred = true
+				}
+
+
+
+
 				for (let coordinate_tuple of this.ghost){
 		            _board_controller.board[coordinate_tuple[0]][coordinate_tuple[1]] = this.cur_piece.piece_id
     			}
     			_board_controller.wipe_piece(this.cur_piece)
-    			_board_controller.check_clear_line(this.cur_piece, this.ghost)
+    			let line_cleared_num = _board_controller.check_clear_line(this.cur_piece, this.ghost)
+
+
+
+				let piece_id = this.cur_piece.piece_id
+				//////这里用来记录一些消行信息，以后用于统计
+				console.log('spin:' + is_spin_occurred)
+				if(is_spin_occurred && piece_id=='T'){
+					var event = new CustomEvent("event_tspin_occurred", { "detail": line_cleared_num });
+					document.dispatchEvent(event);
+				}
+
+
+
+
     			this.generate_piece(_board_controller)
 
 
@@ -1144,22 +1192,9 @@ class Board_Controller{
 			}
 		}
 
-		let is_spin_occurred = false
-		//判断是否发生spin
-		if(!((_piece.can_move_piece([0,1],this)===true || _piece.can_move_piece([-1,0],this)===true
-					|| _piece.can_move_piece([1,0],this))===true )){
-			is_spin_occurred = true
-		}
-		let line_cleared_num = line_full_y_idx.length
-		let piece_id = _piece.piece_id
-		//////这里用来记录一些消行信息，以后用于统计
-		console.log('spin:' + is_spin_occurred)
-		if(is_spin_occurred && piece_id=='T'){
-			var event = new CustomEvent("event_tspin_occurred", { "detail": line_cleared_num });
-			document.dispatchEvent(event);
-		}
 		
 
+			let line_cleared_num = line_full_y_idx.length
 
 
 
@@ -1176,7 +1211,7 @@ class Board_Controller{
 			this.print_dropped_piece(_ghost, _piece.piece_id)//画锁定的块要用到ghost的坐标
 		}
 		
-
+		return line_full_y_idx.length
 		
 		
 	}
@@ -1226,7 +1261,8 @@ function handle_event_next_queue_change(e){
 document.addEventListener('event_tspin_occurred', handle_event_tspin_occurred, false);
 function handle_event_tspin_occurred(e){
 	document.getElementById('spin_callback').innerHTML = 'T spin' + e.detail
-	setTimeout(function(){document.getElementById('spin_callback').innerHTML = ''}, 1200);
+	document.getElementById('spin_callback').style.fontSize = '20px'
+	setTimeout(function(){document.getElementById('spin_callback').innerHTML = '';}, 1200);
 	// console.log('hold id!!')
 }
 
