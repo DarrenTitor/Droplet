@@ -191,6 +191,7 @@ class Piece{
 				test_result = 'edge_collide'
 				//撞边
 				// console.log('cannot move')
+
 				break
 			}
 			else if(_board_controller.board[temp_x][temp_y] != 0){
@@ -677,7 +678,8 @@ class Pieces_Controller{
 					document.dispatchEvent(event);
 				}
 
-
+				var event = new CustomEvent("event_board_vertically_bounce");
+    			document.dispatchEvent(event);
 
 
 
@@ -1249,7 +1251,11 @@ function handle_event_hold_changed(e){
 
 
 document.addEventListener('event_next_queue_change', handle_event_next_queue_change, false);
-function handle_event_next_queue_change(e){
+document.addEventListener('event_hold_changed', handle_event_hold_changed, false);
+function handle_event_hold_changed(e){
+	document.getElementById('hold_piece_id').innerHTML = e.detail
+	// console.log('hold id!!')
+}function handle_event_next_queue_change(e){
 	document.getElementById('next_slots_1').innerHTML = e.detail[0]
 	document.getElementById('next_slots_2').innerHTML = e.detail[1]
 	document.getElementById('next_slots_3').innerHTML = e.detail[2]
@@ -1265,6 +1271,29 @@ function handle_event_tspin_occurred(e){
 	setTimeout(function(){document.getElementById('spin_callback').innerHTML = '';}, 1200);
 	// console.log('hold id!!')
 }
+
+
+document.addEventListener('event_board_vertically_bounce', handle_event_board_vertically_bounce, false);
+function handle_event_board_vertically_bounce(e){
+	var bounce = new Bounce();
+bounce
+  .translate({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: 20 },
+    duration: 500,
+    stiffness: 4,
+    delay: 0
+  })
+  .translate({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: -20 },
+    duration: 500,
+    stiffness: 4,
+    delay: 100
+  })
+  .applyTo(document.getElementById("board"));
+}
+
 
 
 game = new Game('board')
