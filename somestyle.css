@@ -23,12 +23,33 @@ body{
 	height: 100%;
 }
 #board{
+/*	border: solid aquamarine 5px;
+	margin-left: 10%;
+	width: 18%;
+	display: inline-block;*/
+	position:absolute;
+    left:0px;
+    top:0px;
+    border: solid red 5px;
+    z-index: 1;
+}
+
+#board2{
+	position:absolute;
+    left:0px;
+    top:0px;
+    border: solid red 5px;
+    z-index: 2;
+}
+#dad{
 	border: solid aquamarine 5px;
 	margin-left: 10%;
 	width: 18%;
 	display: inline-block;
-	/*height: px;*/
+	position: relative;
 }
+
+
 
 
 #lock_delay_timer{

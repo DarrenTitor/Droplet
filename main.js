@@ -984,6 +984,11 @@ class Board_Controller{
 
 		this.ghost_alpha = 0.8
 
+		this.canvas_effect = document.getElementById('board2');
+		this.ctx_effect = this.canvas_effect.getContext("2d");
+		this.canvas_effect.width  = this.col * this.block_size
+		this.canvas_effect.height = this.row * this.block_size;
+
 	}
 	print(){
 		let newParent = document.createElement('p')
@@ -1041,17 +1046,15 @@ class Board_Controller{
 	}
 
 
-
-	print_grid(){
-
+	print_grid2(){
 		for (var j = 0; j < this.row; j++){
     		for (var i = 0; i < this.col; i++){
 				// this.ctx.beginPath();
-    			this.ctx.lineWidth = "2";
-				this.ctx.strokeStyle = 'white'
-				this.ctx.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
+    			this.ctx_effect.lineWidth = "1";
+				this.ctx_effect.strokeStyle = 'SlateGray'
+				this.ctx_effect.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
 				this.block_size, this.block_size)
-				this.ctx.stroke();
+				this.ctx_effect.stroke();
 
 
 
@@ -1059,8 +1062,10 @@ class Board_Controller{
 
     		}
     	}
-
 	}
+
+
+
 
 	print_block(_block){
 
@@ -1292,13 +1297,93 @@ bounce
     delay: 100
   })
   .applyTo(document.getElementById("board"));
+  	var bounce = new Bounce();
+bounce
+  .translate({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: 20 },
+    duration: 500,
+    stiffness: 4,
+    delay: 0
+  })
+  .translate({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: -20 },
+    duration: 500,
+    stiffness: 4,
+    delay: 100
+  })
+  .applyTo(document.getElementById("board2"));
 }
+
+
+
+// 	var elem = document.getElementById('board');
+// var two = new Two({ width: elem.width, height: elem.height }).appendTo(elem);
+
+
+document.addEventListener('event_board_vertically_bounce', draw_something, false);
+function draw_something(e){}
+
+
+
+
+// var rect = two.makeRectangle(0, 0, 100, 100);
+// rect.fill = 'rgba(0, 200, 255, 0.75)';
+
+// rect.noStroke();
+
+// // Bind a function to scale and rotate the group
+// // to the animation loop.
+// two.bind('update', function(frameCount) {
+//   rect.width -=2
+//   // if(rect.width == 0){
+//   // 	rect.width = 50
+//   // }
+//   if(rect.width<=0){
+//   	rect.width=0
+//   }
+// }).play();  // Finally, start the animation loop
+
+
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 game = new Game('board')
 game.pieces_controller.generate_piece(game.board_controller)
-
+game.board_controller.print_grid2()
 // var Q = kd.Key(81)
 var count = 0
 var frameRate = 1000/60;
@@ -1315,7 +1400,7 @@ function mainLoop(time){  // time in ms accurate to 1 micro second 1/1,000,000th
        lastFrame = currentFrame;
    }
 
-
+	// two.update();
 
    //game loop
 
