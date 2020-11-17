@@ -657,12 +657,43 @@ class Pieces_Controller{
 							|| this.cur_piece.can_move_piece([1,0],_board_controller))===true )){
 					is_spin_occurred = true
 				}
+				//=============
+				let list_for_current_x = []
+				let list_for_current_y = []
+				for (let block of this.cur_piece.blocks){
+					list_for_current_x.push(block.coordinate.x)
+					list_for_current_y.push(block.coordinate.y)
+				}
+				let set_for_current_x = new Set(list_for_current_x)
+				let list_set_of_cur_x = Array.from(set_for_current_x)
+				let min_cur_x = Math.min.apply(Math, list_set_of_cur_x)
+				let effect_width = set_for_current_x.size
+				let min_cur_y = Math.min.apply(Math, list_for_current_y)//=================
 
-
+				let list_for_target_y = []//=================
 				for (let coordinate_tuple of this.ghost){
 		            _board_controller.board[coordinate_tuple[0]][coordinate_tuple[1]] = this.cur_piece.piece_id
+		            list_for_target_y.push(coordinate_tuple[1])//======================
 	        
     			}
+
+    			let max_target_y = Math.max.apply(Math, list_for_target_y)
+    			let effect_length = null
+    			if(min_cur_y-max_target_y>=2){
+    				effect_length = min_cur_y-max_target_y-1
+    			}else{
+    				effect_length = 0
+    			}
+    			// range:min_cur_y-1 ->max_target_y+1 if min_cur_y-max_target_y>=2
+
+    			var event = new CustomEvent("event_harddrop_animation",  { "detail": [effect_length, effect_width, min_cur_x, _board_controller.row-min_cur_y]});
+    			document.dispatchEvent(event);
+
+
+
+
+
+
     			_board_controller.wipe_piece(this.cur_piece)
     			// _board_controller.print_dropped_piece(this.ghost, this.cur_piece.piece_id)//画锁定的块要用到ghost的坐标
 
@@ -988,6 +1019,7 @@ class Board_Controller{
 		this.ctx_effect = this.canvas_effect.getContext("2d");
 		this.canvas_effect.width  = this.col * this.block_size
 		this.canvas_effect.height = this.row * this.block_size;
+		this.stage = new createjs.Stage(this.canvas_effect);
 
 	}
 	print(){
@@ -1351,39 +1383,67 @@ function draw_something(e){}
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 game = new Game('board')
+document.getElementById('dad').style.width = game.board_controller.canvas.width
+document.getElementById('dad').style.height = game.board_controller.canvas.height
+// var elem = document.getElementById('dad');
+// var two = new Two({ width: elem.width, height: elem.height }).appendTo(elem);
+
+document.addEventListener('event_harddrop_animation', handle_event_harddrop_animation, false);
+function handle_event_harddrop_animation(e){
+	console.log(e.detail)
+	// game.board_controller.ctx_effect.fillStyle = 'green';
+	let _width = e.detail[1] * game.board_controller.block_size
+	let _length = e.detail[0] * game.board_controller.block_size
+	let _x = e.detail[2] * game.board_controller.block_size
+	let _y = e.detail[3] * game.board_controller.block_size
+	// game.board_controller.ctx_effect.fillRect(_x, _y, _width, _length)
+ 
+
+var rectangle = new createjs.Shape();
+rectangle.alpha = 0.6
+game.board_controller.stage.addChild(rectangle);
+// rectangle.x = rectangle.y = 0;
+rectangle.graphics.beginFill("white")
+var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
+// rect.graphics.beginFill("white").drawRect(_x,_y, _width, _length);
+console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
+rectangle.addEventListener("tick", function() {
+	let decay_rate = 0.7
+	rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
+if(rectangleCommand.w<=1){
+	rectangleCommand.w=0
+	game.board_controller.stage.removeChild(rectangle)
+}});
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// game = new Game('board')
 game.pieces_controller.generate_piece(game.board_controller)
 game.board_controller.print_grid2()
+
 // var Q = kd.Key(81)
 var count = 0
 var frameRate = 1000/60;
@@ -1400,7 +1460,7 @@ function mainLoop(time){  // time in ms accurate to 1 micro second 1/1,000,000th
        lastFrame = currentFrame;
    }
 
-	// two.update();
+	game.board_controller.stage.update()
 
    //game loop
 
