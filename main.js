@@ -670,7 +670,7 @@ class Pieces_Controller{
 
     			let piece_id = this.cur_piece.piece_id
 				//////这里用来记录一些消行信息，以后用于统计
-				console.log('spin:' + is_spin_occurred)
+				// console.log('spin:' + is_spin_occurred)
 				if(is_spin_occurred && piece_id=='T'){
 					var event = new CustomEvent("event_tspin_occurred", { "detail": line_cleared_num });
 					document.dispatchEvent(event);
@@ -827,10 +827,10 @@ class Pieces_Controller{
 		    			}
 		    			var event = new CustomEvent("event_harddrop_animation",  { "detail": [effect_length, effect_width, min_cur_x, _board_controller.row-min_cur_y]});
     					document.dispatchEvent(event);
-    					console.log([effect_length, effect_width, min_cur_x, _board_controller.row-min_cur_y])
+    					// console.log([effect_length, effect_width, min_cur_x, _board_controller.row-min_cur_y])
 
 
-						this.soft_frame_timer = this.soft_ARR
+						this.soft_frame_timer = this.soft_DAS
 
 						return need_to_refresh
 					}
@@ -843,6 +843,7 @@ class Pieces_Controller{
     	}
     	else{
     		this.soft_frame_timer = this.soft_DAS
+    		this.soft_timer_type = 0
     		return need_to_refresh
     	}
 	}
@@ -1256,9 +1257,12 @@ class Board_Controller{
 
 		
 
-			let line_cleared_num = line_full_y_idx.length
+		let line_cleared_num = line_full_y_idx.length
+		//playing clear line animation===========
+		var event = new CustomEvent("event_clear_line_animation",  { "detail": line_full_y_idx});
+		document.dispatchEvent(event);
 
-
+		//========
 
 		for(let i=0; i<line_cleared_num; i++){
 			cleared_board_transposed.push(new Array(this.col).fill(0))
@@ -1373,54 +1377,18 @@ bounce
 
 
 
-// 	var elem = document.getElementById('board');
-// var two = new Two({ width: elem.width, height: elem.height }).appendTo(elem);
-
-
-document.addEventListener('event_board_vertically_bounce', draw_something, false);
-function draw_something(e){}
-
-
-
-
-// var rect = two.makeRectangle(0, 0, 100, 100);
-// rect.fill = 'rgba(0, 200, 255, 0.75)';
-
-// rect.noStroke();
-
-// // Bind a function to scale and rotate the group
-// // to the animation loop.
-// two.bind('update', function(frameCount) {
-//   rect.width -=2
-//   // if(rect.width == 0){
-//   // 	rect.width = 50
-//   // }
-//   if(rect.width<=0){
-//   	rect.width=0
-//   }
-// }).play();  // Finally, start the animation loop
-
-
-// }
-
-
-
 
 game = new Game('board')
 document.getElementById('dad').style.width = game.board_controller.canvas.width
 document.getElementById('dad').style.height = game.board_controller.canvas.height
-// var elem = document.getElementById('dad');
-// var two = new Two({ width: elem.width, height: elem.height }).appendTo(elem);
 
 document.addEventListener('event_harddrop_animation', handle_event_harddrop_animation, false);
 function handle_event_harddrop_animation(e){
-	console.log(e.detail)
-	// game.board_controller.ctx_effect.fillStyle = 'green';
+	// console.log(e.detail)
 	let _width = e.detail[1] * game.board_controller.block_size
 	let _length = e.detail[0] * game.board_controller.block_size
 	let _x = e.detail[2] * game.board_controller.block_size
 	let _y = e.detail[3] * game.board_controller.block_size
-	// game.board_controller.ctx_effect.fillRect(_x, _y, _width, _length)
  
 
 var rectangle = new createjs.Shape();
@@ -1430,7 +1398,7 @@ game.board_controller.stage.addChild(rectangle);
 rectangle.graphics.beginFill("white")
 var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
 // rect.graphics.beginFill("white").drawRect(_x,_y, _width, _length);
-console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
+// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
 rectangle.addEventListener("tick", function() {
 	let decay_rate = 0.7
 	rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
@@ -1438,6 +1406,55 @@ if(rectangleCommand.w<=1){
 	rectangleCommand.w=0
 	game.board_controller.stage.removeChild(rectangle)
 }});
+}
+
+
+document.addEventListener('event_clear_line_animation', handle_event_clear_line_animation, false);
+function handle_event_clear_line_animation(e){
+	
+	let list_clear_line_y_from_top = []
+	for(let i of e.detail){
+		list_clear_line_y_from_top.push(game.board_controller.row - i -1)
+	}
+
+	for(let i of list_clear_line_y_from_top){
+
+	let _width = game.board_controller.col * game.board_controller.block_size
+	let _length = game.board_controller.block_size
+	let _x = 0
+	let _y = i * game.board_controller.block_size
+ 	// console.log('clear line:', list_clear_line_y_from_top)
+let rectangle = new createjs.Shape();
+rectangle.alpha = 0.8
+game.board_controller.stage.addChild(rectangle);
+rectangle.graphics.beginFill("white")
+let rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
+// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
+rectangle.addEventListener("tick", function() {
+	let decay_rate = 0.6
+	rectangleCommand.y+=((1-decay_rate)/2)*rectangleCommand.h;rectangleCommand.h *= decay_rate;
+if(rectangleCommand.h<=1){
+	rectangleCommand.h=0
+	game.board_controller.stage.removeChild(rectangle)
+	// console.log('removed a child')
+}});
+
+
+ }
+
+// var rectangle = new createjs.Shape();
+// rectangle.alpha = 0.6
+// game.board_controller.stage.addChild(rectangle);
+// rectangle.graphics.beginFill("white")
+// var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
+// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
+// rectangle.addEventListener("tick", function() {
+// 	let decay_rate = 0.7
+// 	rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
+// if(rectangleCommand.w<=1){
+// 	rectangleCommand.w=0
+// 	game.board_controller.stage.removeChild(rectangle)
+// }});
 }
 
 

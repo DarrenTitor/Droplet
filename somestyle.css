@@ -30,7 +30,7 @@ body{
 	position:absolute;
     left:0px;
     top:0px;
-    border: solid red 5px;
+    border: solid aquamarine 5px;
     z-index: 1;
 }
 
@@ -38,7 +38,7 @@ body{
 	position:absolute;
     left:0px;
     top:0px;
-    border: solid red 5px;
+    border: solid aquamarine 5px;
     z-index: 2;
 }
 #dad{
@@ -92,7 +92,7 @@ body{
 	display:inline-block;
 	float: right;
 	width: 10%;
-	border: tomato solid 3px;
+	border: aquamarine solid 3px;
 	font-size: 30px;
 	color: black
 }
