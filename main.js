@@ -614,39 +614,6 @@ class Pieces_Controller{
 		}
 	}
 
-	// detect_manual_lock(_board_controller){
-	// 	let need_to_refresh_board = false
-	// 	if(kd.SPACE.isDown()){
-	// 		if(!this.manual_lock_last_frame){
-	// 			for (let block of this.cur_piece.blocks){
-	// 	            let temp_x = block.coordinate.x
-	// 	            let temp_y = block.coordinate.y
-	// 	            _board_controller.board[temp_x][temp_y] = block.block_id
-	        
- //    			}
-
- //    			_board_controller.check_clear_line(this.cur_piece, this.ghost)
-    			
- //    			// this.cur_piece = null
- //    			// _board_controller.print_dropped_piece(this.cur_piece)
- //    			delete this.cur_piece///??????????
- //    			this.generate_piece(_board_controller)
- //    			need_to_refresh_board = true
- //    			this.manual_lock_last_frame = true
- //    			return need_to_refresh_board
-
-
-	// 		}
-	// 		this.manual_lock_last_frame = true
-	// 		return need_to_refresh_board
-	// 	}
-	// 	else{
-	// 		this.manual_lock_last_frame = false
-	// 		return need_to_refresh_board
-	// 	}
-
-	// }
-
 	detect_harddrop(_board_controller){
 		let need_to_refresh_board = false
 		if(kd.I.isDown()){
@@ -806,16 +773,72 @@ class Pieces_Controller{
             }
 	        else{
 	        	this.soft_frame_timer -= 1
+
 	            if (this.soft_frame_timer<=0){
-	            	if (this.cur_piece.can_move_piece([0,-1],_board_controller)===true){
-	            		_board_controller.wipe_piece(this.cur_piece)
-	            		this.cur_piece.move_piece([0,-1])
-	            		need_to_refresh = true
-                    	return need_to_refresh
+	            	if(this.soft_ARR!=0){
+	            		if (this.cur_piece.can_move_piece([0,-1],_board_controller)===true){
+		            		_board_controller.wipe_piece(this.cur_piece)
+		            		this.cur_piece.move_piece([0,-1])
+		            		need_to_refresh = true
+	                    	return need_to_refresh
+		            	}
+		                this.soft_frame_timer = this.soft_ARR
+		                return need_to_refresh
 	            	}
-	                this.soft_frame_timer = this.soft_ARR
-	                return need_to_refresh
-	            }
+	            	else{
+	            		//soft_arr!=0, she piece will directly drop to the bottom
+
+	            		//save the info of current piece
+
+	            		let list_for_current_x = []
+						let list_for_current_y = []
+						for (let block of this.cur_piece.blocks){
+							list_for_current_x.push(block.coordinate.x)
+							list_for_current_y.push(block.coordinate.y)
+						}
+						let set_for_current_x = new Set(list_for_current_x)
+						let list_set_of_cur_x = Array.from(set_for_current_x)
+						let min_cur_x = Math.min.apply(Math, list_set_of_cur_x)
+						let effect_width = set_for_current_x.size
+						let min_cur_y = Math.min.apply(Math, list_for_current_y)//=================
+
+
+	            		while(this.cur_piece.can_move_piece([0,-1], _board_controller)===true){
+							_board_controller.wipe_piece(this.cur_piece)
+							this.cur_piece.move_piece([0,-1])
+							need_to_refresh = true
+						}
+
+
+						let list_for_target_y = []//=================
+						for (let block of this.cur_piece.blocks){
+							list_for_target_y.push(block.coordinate.y)
+						}
+
+
+
+						
+						let max_target_y = Math.max.apply(Math, list_for_target_y)
+		    			let effect_length = null
+		    			if(min_cur_y-max_target_y>=2){
+		    				effect_length = min_cur_y-max_target_y-1
+		    			}else{
+		    				effect_length = 0
+		    			}
+		    			var event = new CustomEvent("event_harddrop_animation",  { "detail": [effect_length, effect_width, min_cur_x, _board_controller.row-min_cur_y]});
+    					document.dispatchEvent(event);
+    					console.log([effect_length, effect_width, min_cur_x, _board_controller.row-min_cur_y])
+
+
+						this.soft_frame_timer = this.soft_ARR
+
+						return need_to_refresh
+					}
+
+
+
+
+            	}
 	        }
     	}
     	else{
