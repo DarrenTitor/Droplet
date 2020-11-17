@@ -378,6 +378,10 @@ class Pieces_Controller{
 	            this.is_rotated_last_frame="clockwise"//???
 	            this.update_ghost(_board_controller)
 	            this.lock_delay_timer = this.lock_delay
+
+	      //       var event_2 = new CustomEvent("event_play_rotation_sound");
+    			// document.dispatchEvent(event_2);
+
 		        need_to_refresh = true
 		        return need_to_refresh
 	        }
@@ -390,6 +394,10 @@ class Pieces_Controller{
 	            this.is_rotated_last_frame="counter"//???
 	            this.update_ghost(_board_controller)
 	            this.lock_delay_timer = this.lock_delay
+
+	      //       var event_2 = new CustomEvent("event_play_rotation_sound");
+    			// document.dispatchEvent(event_2);
+
 		        need_to_refresh = true
 		        return need_to_refresh
 	        }
@@ -668,6 +676,7 @@ class Pieces_Controller{
 
 
 
+
     			let piece_id = this.cur_piece.piece_id
 				//////这里用来记录一些消行信息，以后用于统计
 				// console.log('spin:' + is_spin_occurred)
@@ -676,9 +685,11 @@ class Pieces_Controller{
 					document.dispatchEvent(event);
 				}
 
-				var event = new CustomEvent("event_board_vertically_bounce");
-    			document.dispatchEvent(event);
+				var event_3 = new CustomEvent("event_board_vertically_bounce");
+    			document.dispatchEvent(event_3);
 
+    			var event_2 = new CustomEvent("event_play_drop_sound", { "detail": line_cleared_num });
+    			document.dispatchEvent(event_2);
 
 
 
@@ -964,11 +975,15 @@ class Pieces_Controller{
 
 				let piece_id = this.cur_piece.piece_id
 				//////这里用来记录一些消行信息，以后用于统计
-				console.log('spin:' + is_spin_occurred)
+				// console.log('spin:' + is_spin_occurred)
 				if(is_spin_occurred && piece_id=='T'){
 					var event = new CustomEvent("event_tspin_occurred", { "detail": line_cleared_num });
 					document.dispatchEvent(event);
 				}
+
+				var event_2 = new CustomEvent("event_play_drop_sound", { "detail": line_cleared_num });
+    			document.dispatchEvent(event_2);
+    			console.log('apply_lock_delay')
 
 
 
@@ -1361,9 +1376,9 @@ function draw_next_piece_on_canvas(_canvas, _piece_id){
 	    var image = document.getElementById(game.board_controller.color.get("Z"))
 	    if(image!= null && image.complete){
 			ctx.drawImage(image, 0*block_size, 0*block_size)
-			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 0*block_size)
 			ctx.drawImage(image, 1*block_size, 1*block_size)
-			ctx.drawImage(image, 1*block_size, 2*block_size)
+			ctx.drawImage(image, 2*block_size, 1*block_size)
 
 		}
 	    break;
@@ -1477,21 +1492,21 @@ function handle_event_harddrop_animation(e){
 	let _y = e.detail[3] * game.board_controller.block_size
  
 
-var rectangle = new createjs.Shape();
-rectangle.alpha = 0.6
-game.board_controller.stage.addChild(rectangle);
-// rectangle.x = rectangle.y = 0;
-rectangle.graphics.beginFill("white")
-var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
-// rect.graphics.beginFill("white").drawRect(_x,_y, _width, _length);
-// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
-rectangle.addEventListener("tick", function() {
-	let decay_rate = 0.7
-	rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
-if(rectangleCommand.w<=1){
-	rectangleCommand.w=0
-	game.board_controller.stage.removeChild(rectangle)
-}});
+	var rectangle = new createjs.Shape();
+	rectangle.alpha = 0.6
+	game.board_controller.stage.addChild(rectangle);
+	// rectangle.x = rectangle.y = 0;
+	rectangle.graphics.beginFill("white")
+	var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
+	// rect.graphics.beginFill("white").drawRect(_x,_y, _width, _length);
+	// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
+	rectangle.addEventListener("tick", function() {
+		let decay_rate = 0.7
+		rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
+	if(rectangleCommand.w<=1){
+		rectangleCommand.w=0
+		game.board_controller.stage.removeChild(rectangle)
+	}});
 }
 
 
@@ -1528,6 +1543,11 @@ if(rectangleCommand.h<=1){
 
  }
 
+
+
+
+
+
 // var rectangle = new createjs.Shape();
 // rectangle.alpha = 0.6
 // game.board_controller.stage.addChild(rectangle);
@@ -1545,7 +1565,34 @@ if(rectangleCommand.h<=1){
 
 
 
+ document.addEventListener('event_play_drop_sound', handle_event_play_drop_sound, false);
+function handle_event_play_drop_sound(e){
+	let line_cleared_num = e.detail
+	if(line_cleared_num==0){
+		var audio = new Audio("audio/FOLEY WATER DROP ON METAL 01.wav");
+		if(audio!= null){
+			audio.loop = false
+			audio.play()
+		}
+	}
+	else{
+		var audio = new Audio("audio/human drop.wav");
+		if(audio!= null){
+			audio.loop = false
+			audio.play()
+		}
+	}
+	
+ }
 
+//   document.addEventListener('event_play_rotation_sound', handle_event_play_rotation_sound, false);
+// function handle_event_play_rotation_sound(){
+// 	var audio = new Audio("audio/Water drop single drip_BLASTWAVEFX_31745.wav");
+// 	if(audio!= null){
+// 		audio.loop = false
+// 		audio.play()
+// 	}
+//  }
 
 
 
