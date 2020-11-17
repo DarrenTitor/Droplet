@@ -1010,7 +1010,7 @@ class Pieces_Controller{
 
 
 class Board_Controller{
-	constructor(_row, _col, _html_id, _block_size = 30, ){
+	constructor(_row, _col, _html_id, _block_size = 30){
 		this.canvas = document.getElementById(_html_id);
 		this.ctx = this.canvas.getContext("2d");
 		this.row = _row
@@ -1317,15 +1317,101 @@ function handle_event_hold_changed(e){
 document.addEventListener('event_next_queue_change', handle_event_next_queue_change, false);
 document.addEventListener('event_hold_changed', handle_event_hold_changed, false);
 function handle_event_hold_changed(e){
-	document.getElementById('hold_piece_id').innerHTML = e.detail
-	// console.log('hold id!!')
-}function handle_event_next_queue_change(e){
-	document.getElementById('next_slots_1').innerHTML = e.detail[0]
-	document.getElementById('next_slots_2').innerHTML = e.detail[1]
-	document.getElementById('next_slots_3').innerHTML = e.detail[2]
-	document.getElementById('next_slots_4').innerHTML = e.detail[3]
-	document.getElementById('next_slots_5').innerHTML = e.detail[4]
-	document.getElementById('next_slots_6').innerHTML = e.detail[5]
+	draw_next_piece_on_canvas(document.getElementById('hold_piece'), e.detail)
+}
+function handle_event_next_queue_change(e){
+	draw_next_piece_on_canvas(document.getElementById('next_slots_1'), e.detail[0])
+	draw_next_piece_on_canvas(document.getElementById('next_slots_2'), e.detail[1])
+	draw_next_piece_on_canvas(document.getElementById('next_slots_3'), e.detail[2])
+	draw_next_piece_on_canvas(document.getElementById('next_slots_4'), e.detail[3])
+	draw_next_piece_on_canvas(document.getElementById('next_slots_5'), e.detail[4])
+	draw_next_piece_on_canvas(document.getElementById('next_slots_6'), e.detail[5])
+
+}
+
+function draw_next_piece_on_canvas(_canvas, _piece_id){
+
+	let ctx = _canvas.getContext("2d")
+	let block_size = game.board_controller.block_size
+	_canvas.width = 4*block_size
+	_canvas.height = 3.5*block_size
+	// _canvas.style.border = 'solid tomato 5px'
+	switch (_piece_id) {
+	case "T":
+	    var image = document.getElementById(game.board_controller.color.get("T"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 1*block_size, 0*block_size)
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+			ctx.drawImage(image, 2*block_size, 1*block_size)
+
+		}
+	    break;
+	case "I":
+	    var image = document.getElementById(game.board_controller.color.get("I"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+			ctx.drawImage(image, 2*block_size, 1*block_size)
+			ctx.drawImage(image, 3*block_size, 1*block_size)
+
+		}
+	    break;
+    case "Z":
+	    var image = document.getElementById(game.board_controller.color.get("Z"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 0*block_size, 0*block_size)
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 2*block_size)
+
+		}
+	    break;
+    case "S":
+	    var image = document.getElementById(game.board_controller.color.get("S"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 1*block_size, 0*block_size)
+			ctx.drawImage(image, 2*block_size, 0*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+
+		}
+	    break;
+    case "J":
+	    var image = document.getElementById(game.board_controller.color.get("J"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 0*block_size, 0*block_size)
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+			ctx.drawImage(image, 2*block_size, 1*block_size)
+
+		}
+	    break;
+    case "L":
+	    var image = document.getElementById(game.board_controller.color.get("L"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 2*block_size, 0*block_size)
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+			ctx.drawImage(image, 2*block_size, 1*block_size)
+
+		}
+	    break;
+    case "O":
+	    var image = document.getElementById(game.board_controller.color.get("O"))
+	    if(image!= null && image.complete){
+			ctx.drawImage(image, 0*block_size, 0*block_size)
+			ctx.drawImage(image, 0*block_size, 1*block_size)
+			ctx.drawImage(image, 1*block_size, 0*block_size)
+			ctx.drawImage(image, 1*block_size, 1*block_size)
+
+		}
+	    break;
+
+  default:
+    console.log('null')
+}
+
 }
 
 document.addEventListener('event_tspin_occurred', handle_event_tspin_occurred, false);
