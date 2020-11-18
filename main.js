@@ -25,14 +25,11 @@ class Game{
 		if(need_to_refresh_piece_1 || need_to_refresh_piece_2 || need_to_refresh_piece_3){
 			this.board_controller.print_ghost(this.pieces_controller.ghost)
 			this.board_controller.print_piece(this.pieces_controller.cur_piece)
-			// this.board_controller.print_grid()
 		}
 		
 
 	}
-	try(){
 
-	}
 }
 
 
@@ -154,16 +151,7 @@ class Piece{
 	}
 
 	is_touching_ground(_board_controller){
-	    // let is_touching = false
-	    // for (let block of this.blocks){
-	    //     let temp_x = block.coordinate.x
-	    //     let temp_y = block.coordinate.y
-	    //     if (temp_y==0 || (temp_y>0&&_board_controller.board[temp_x][temp_y]!=0)){
-	    //     	is_touching=true
-	    //     	break
-	    //     }
-	    // }
-	    // return is_touching
+
 	    return (!(this.can_move_piece([0,-1], _board_controller)===true))
 	}
 
@@ -186,18 +174,15 @@ class Piece{
 		for (let block of this.blocks){
 			let temp_x = block.coordinate.x + _offset[0]
 			let temp_y = block.coordinate.y + _offset[1]
-			// console.log(block.coordinate.x + ',' + block.coordinate.y)
 			if (temp_x<0 || temp_y<0 || temp_x>=_board_controller.col || temp_y>=_board_controller.row){
 				test_result = 'edge_collide'
 				//撞边
-				// console.log('cannot move')
 
 				break
 			}
 			else if(_board_controller.board[temp_x][temp_y] != 0){
 				//[temp_x][temp_y]这里暂时不知道要不要反过来
 				test_result = 'block_collide'
-				// console.log('cannot move')
 				break
 			}
 
@@ -225,7 +210,6 @@ class Piece{
 	        this.move_piece(end_offset)
 		}
 	    else{
-	        // console.log("cannot move")
 	    }
 	    return move_possible
 	}
@@ -379,8 +363,6 @@ class Pieces_Controller{
 	            this.update_ghost(_board_controller)
 	            this.lock_delay_timer = this.lock_delay
 
-	      //       var event_2 = new CustomEvent("event_play_rotation_sound");
-    			// document.dispatchEvent(event_2);
 
 		        need_to_refresh = true
 		        return need_to_refresh
@@ -394,9 +376,6 @@ class Pieces_Controller{
 	            this.is_rotated_last_frame="counter"//???
 	            this.update_ghost(_board_controller)
 	            this.lock_delay_timer = this.lock_delay
-
-	      //       var event_2 = new CustomEvent("event_play_rotation_sound");
-    			// document.dispatchEvent(event_2);
 
 		        need_to_refresh = true
 		        return need_to_refresh
@@ -643,12 +622,12 @@ class Pieces_Controller{
 				let list_set_of_cur_x = Array.from(set_for_current_x)
 				let min_cur_x = Math.min.apply(Math, list_set_of_cur_x)
 				let effect_width = set_for_current_x.size
-				let min_cur_y = Math.min.apply(Math, list_for_current_y)//=================
+				let min_cur_y = Math.min.apply(Math, list_for_current_y)
 
-				let list_for_target_y = []//=================
+				let list_for_target_y = []
 				for (let coordinate_tuple of this.ghost){
 		            _board_controller.board[coordinate_tuple[0]][coordinate_tuple[1]] = this.cur_piece.piece_id
-		            list_for_target_y.push(coordinate_tuple[1])//======================
+		            list_for_target_y.push(coordinate_tuple[1])
 	        
     			}
 
@@ -688,14 +667,10 @@ class Pieces_Controller{
 				var event_3 = new CustomEvent("event_board_vertically_bounce");
     			document.dispatchEvent(event_3);
 
-    			var event_2 = new CustomEvent("event_play_drop_sound", { "detail": line_cleared_num });
+    			var event_2 = new CustomEvent("event_play_drop_sound", { "detail": [line_cleared_num, is_spin_occurred ] });
     			document.dispatchEvent(event_2);
 
 
-
-    			
-    			// this.cur_piece = null
-    			// _board_controller.print_dropped_piece(this.cur_piece)
     			this.generate_piece(_board_controller)
 
     			this.harddrop_lock_last_frame = true
@@ -826,8 +801,6 @@ class Pieces_Controller{
 							list_for_target_y.push(block.coordinate.y)
 						}
 
-
-
 						
 						let max_target_y = Math.max.apply(Math, list_for_target_y)
 		    			let effect_length = null
@@ -845,10 +818,6 @@ class Pieces_Controller{
 
 						return need_to_refresh
 					}
-
-
-
-
             	}
 	        }
     	}
@@ -899,9 +868,6 @@ class Pieces_Controller{
 		var event = new CustomEvent("event_next_queue_change", { "detail": this.piece_queue.slice(0,6) });
 		document.dispatchEvent(event);
 	}
-
-
-
 
 
 
@@ -962,16 +928,11 @@ class Pieces_Controller{
 					is_spin_occurred = true
 				}
 
-
-
-
 				for (let coordinate_tuple of this.ghost){
 		            _board_controller.board[coordinate_tuple[0]][coordinate_tuple[1]] = this.cur_piece.piece_id
     			}
     			_board_controller.wipe_piece(this.cur_piece)
     			let line_cleared_num = _board_controller.check_clear_line(this.cur_piece, this.ghost)
-
-
 
 				let piece_id = this.cur_piece.piece_id
 				//////这里用来记录一些消行信息，以后用于统计
@@ -981,23 +942,12 @@ class Pieces_Controller{
 					document.dispatchEvent(event);
 				}
 
-				var event_2 = new CustomEvent("event_play_drop_sound", { "detail": line_cleared_num });
+				var event_2 = new CustomEvent("event_play_drop_sound", { "detail": [line_cleared_num, is_spin_occurred ]});
     			document.dispatchEvent(event_2);
     			console.log('apply_lock_delay')
 
-
-
-
     			this.generate_piece(_board_controller)
 
-
-
-
-
-
-
-
-					// console.log('lock_here')
 					this.lock_delay_timer = this.lock_delay
 					this.lock_delay_is_counting = true
 					need_to_refresh = true
@@ -1060,6 +1010,11 @@ class Board_Controller{
 		this.canvas_effect.height = this.row * this.block_size;
 		this.stage = new createjs.Stage(this.canvas_effect);
 
+		this.canvas_grid = document.getElementById('board3');
+		this.ctx_grid = this.canvas_grid.getContext("2d");
+		this.canvas_grid.width  = this.col * this.block_size
+		this.canvas_grid.height = this.row * this.block_size;
+
 	}
 	print(){
 		let newParent = document.createElement('p')
@@ -1084,14 +1039,10 @@ class Board_Controller{
 		return newParent
 	}
 	print_board(){
-		// var canvas = document.getElementById('board');
-		// var ctx = this.canvas.getContext("2d");
-		
 		this.canvas.width  = this.col * this.block_size
 		this.canvas.height = this.row * this.block_size;
 		for (var j = 0; j < this.row; j++){
     		for (var i = 0; i < this.col; i++){
-    			// console.log(this.color.get(this.board[i][j]))
     			var image = document.getElementById(this.color.get(this.board[i][j]))
 
 
@@ -1099,17 +1050,7 @@ class Board_Controller{
 					if (this.board[i][j]!=0){
 						this.ctx.drawImage(image,i*this.block_size, (this.row-j-1)*this.block_size)
   					}
-  					// console.log('print')
 				}
-
-
-				
-
-    // 			this.ctx.lineWidth = "2";
-				// this.ctx.strokeStyle = 'white'
-				// this.ctx.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
-				// 	this.block_size, this.block_size)
-				// this.ctx.stroke();
 
     		}
     	}
@@ -1121,16 +1062,11 @@ class Board_Controller{
 		for (var j = 0; j < this.row; j++){
     		for (var i = 0; i < this.col; i++){
 				// this.ctx.beginPath();
-    			this.ctx_effect.lineWidth = "1";
-				this.ctx_effect.strokeStyle = 'SlateGray'
-				this.ctx_effect.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
+    			this.ctx_grid.lineWidth = "1";
+				this.ctx_grid.strokeStyle = 'SlateGray'
+				this.ctx_grid.rect(i*this.block_size, (this.row-j-1)*this.block_size, 
 				this.block_size, this.block_size)
-				this.ctx_effect.stroke();
-
-
-
-
-
+				this.ctx_grid.stroke();
     		}
     	}
 	}
@@ -1159,11 +1095,7 @@ class Board_Controller{
 
 		let x = _block.coordinate.x
 		let y = _block.coordinate.y
-		// let block_color = this.color.get(_block.block_id)
-		// console.log(x + ', ' + y )
-		// var canvas = document.getElementById('board');
-		// var ctx = this.canvas.getContext("2d");
-		// this.ctx.fillStyle = block_color
+
 		this.ctx.clearRect(x*this.block_size, (this.row-y-1)*this.block_size, this.block_size, this.block_size)
 
 
@@ -1177,7 +1109,6 @@ class Board_Controller{
 
 		
 		if (_piece!=null){
-			// console.log('print_piece')
 
 			for (let block of _piece.blocks){
 				this.print_block(block)
@@ -1186,13 +1117,11 @@ class Board_Controller{
 	}
 
 	print_ghost(_ghost){
-			// console.log('printing ghost')
 		this.ctx.globalAlpha = this.ghost_alpha
 		var image = document.getElementById(this.color.get('G'))
 		
 		if(image.complete){
 			for (let coordinate_tuple of _ghost){
-			// this.wipe_ghost_block(coordinate_tuple)
 				this.ctx.drawImage(image,coordinate_tuple[0]*this.block_size, (this.row-coordinate_tuple[1]-1)*this.block_size)			
 			}
 		}
@@ -1210,14 +1139,12 @@ class Board_Controller{
 
 	print_dropped_piece(_coordinate_tuple_set, _piece_id){
 
-		// console.log('printing lite' + _coordinate_tuple_set)
 		var image = document.getElementById(this.color.get(_piece_id))
 
 		
 		for (let coordinate_tuple of _coordinate_tuple_set){
 			let x = coordinate_tuple[0]
 			let y = coordinate_tuple[1]
-			// this.wipe_ghost_block(coordinate_tuple)
 			if(image!= null && image.complete){
 			this.ctx.drawImage(image,x*this.block_size, (this.row-y-1)*this.block_size)
 		}
@@ -1225,9 +1152,7 @@ class Board_Controller{
 	}
 
 	wipe_piece(_piece){
-		// console.log('wipe piece at' + _piece.center_coordinate.x + ', ' +_piece.center_coordinate.y)
 		if (_piece!=null){
-			// console.log('wipe_piece')
 			for (let block of _piece.blocks){
 				this.wipe_block(block)
 			}
@@ -1312,20 +1237,17 @@ window.addEventListener("blur", handle_blur);
 
 function handle_blur(){
 	document.getElementById('focus_message').innerHTML = 'lost focus!'
-	// console.log('lost focus!')
 }
 
 window.addEventListener("focus", handle_focus);
 
 function handle_focus(){
 	document.getElementById('focus_message').innerHTML = 'focus!'
-	// console.log('focus!')
 }
 
 document.addEventListener('event_hold_changed', handle_event_hold_changed, false);
 function handle_event_hold_changed(e){
 	document.getElementById('hold_piece_id').innerHTML = e.detail
-	// console.log('hold id!!')
 }
 
 
@@ -1434,7 +1356,6 @@ function handle_event_tspin_occurred(e){
 	document.getElementById('spin_callback').innerHTML = 'T spin' + e.detail
 	document.getElementById('spin_callback').style.fontSize = '20px'
 	setTimeout(function(){document.getElementById('spin_callback').innerHTML = '';}, 1200);
-	// console.log('hold id!!')
 }
 
 
@@ -1474,6 +1395,24 @@ bounce
     delay: 100
   })
   .applyTo(document.getElementById("board2"));
+
+    	var bounce = new Bounce();
+bounce
+  .translate({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: 20 },
+    duration: 500,
+    stiffness: 4,
+    delay: 0
+  })
+  .translate({
+    from: { x: 0, y: 0 },
+    to: { x: 0, y: -20 },
+    duration: 500,
+    stiffness: 4,
+    delay: 100
+  })
+  .applyTo(document.getElementById("board3"));
 }
 
 
@@ -1495,18 +1434,16 @@ function handle_event_harddrop_animation(e){
 	var rectangle = new createjs.Shape();
 	rectangle.alpha = 0.6
 	game.board_controller.stage.addChild(rectangle);
-	// rectangle.x = rectangle.y = 0;
 	rectangle.graphics.beginFill("white")
 	var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
-	// rect.graphics.beginFill("white").drawRect(_x,_y, _width, _length);
-	// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
 	rectangle.addEventListener("tick", function() {
 		let decay_rate = 0.7
 		rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
-	if(rectangleCommand.w<=1){
-		rectangleCommand.w=0
-		game.board_controller.stage.removeChild(rectangle)
-	}});
+		if(rectangleCommand.w<=1){
+			rectangleCommand.w=0
+			game.board_controller.stage.removeChild(rectangle)
+		}
+	});
 }
 
 
@@ -1542,74 +1479,39 @@ if(rectangleCommand.h<=1){
 
 
  }
-
-
-
-
-
-
-// var rectangle = new createjs.Shape();
-// rectangle.alpha = 0.6
-// game.board_controller.stage.addChild(rectangle);
-// rectangle.graphics.beginFill("white")
-// var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
-// console.log('drawing', _x,_y, _width, _length, game.board_controller.block_size)
-// rectangle.addEventListener("tick", function() {
-// 	let decay_rate = 0.7
-// 	rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
-// if(rectangleCommand.w<=1){
-// 	rectangleCommand.w=0
-// 	game.board_controller.stage.removeChild(rectangle)
-// }});
 }
 
 
 
  document.addEventListener('event_play_drop_sound', handle_event_play_drop_sound, false);
 function handle_event_play_drop_sound(e){
-	let line_cleared_num = e.detail
-	if(line_cleared_num==0){
-		var audio = new Audio("audio/FOLEY WATER DROP ON METAL 01.wav");
+	let line_cleared_num = e.detail[0]
+	let is_spin_occurred = e.detail[1]
+	if(is_spin_occurred){
+		var audio = new Audio("audio/Water drop single drip_BLASTWAVEFX_31745.wav");
 		if(audio!= null){
 			audio.loop = false
 			audio.play()
 		}
-	}
-	else{
-		var audio = new Audio("audio/human drop.wav");
-		if(audio!= null){
-			audio.loop = false
-			audio.play()
+	}else{
+		if(line_cleared_num==0){
+			var audio = new Audio("audio/FOLEY WATER DROP ON METAL 01.wav");
+			if(audio!= null){
+				audio.loop = false
+				audio.play()
+			}
+		}
+		else{
+			var audio = new Audio("audio/human drop.wav");
+			if(audio!= null){
+				audio.loop = false
+				audio.play()
+			}
 		}
 	}
 	
+	
  }
-
-//   document.addEventListener('event_play_rotation_sound', handle_event_play_rotation_sound, false);
-// function handle_event_play_rotation_sound(){
-// 	var audio = new Audio("audio/Water drop single drip_BLASTWAVEFX_31745.wav");
-// 	if(audio!= null){
-// 		audio.loop = false
-// 		audio.play()
-// 	}
-//  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

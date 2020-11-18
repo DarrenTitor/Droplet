@@ -51,6 +51,15 @@ body{
     z-index: 2;
 
 }
+
+#board3{
+	position:absolute;
+    left:0px;
+    top:0px;
+    border: solid aquamarine 5px;
+    z-index: 3;
+
+}
 #dad{
 	/*border: solid white 5px;*/
 	width: 30%;
