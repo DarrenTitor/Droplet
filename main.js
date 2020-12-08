@@ -7,8 +7,8 @@ class Game{
 	detect_input(){
 		
 		let need_to_refresh_board_3 = this.pieces_controller.apply_gravity(this.board_controller)
-		// let need_to_refresh_board_1 = this.pieces_controller.detect_manual_lock(this.board_controller)
 		let need_to_refresh_board_2 = this.pieces_controller.detect_harddrop(this.board_controller)
+		
 		let need_to_refresh_board_4 = this.pieces_controller.apply_lock_delay(this.board_controller)
 		
 		
@@ -67,9 +67,7 @@ class Piece{
     this.piece_id = _piece_id
     this.blocks = [] 
     this.center_coordinate = {x:_center_x, y:_center_y}
-    
-    this.offset_data = null
-
+    // define coordinate of each blocks
     if(this.piece_id=="O"){
 		this.blocks = [ 
 		new Block(_center_x, _center_y, "O"),
@@ -85,7 +83,6 @@ class Piece{
 	    new Block(_center_x+1, _center_y, "I"),
 	    new Block(_center_x+2, _center_y, "I") 
     ]}
-            
         
     else if(this.piece_id=="Z"){
     	this.blocks = [
@@ -126,7 +123,10 @@ class Piece{
         new Block(_center_x+1, _center_y, "T"),
         new Block(_center_x, _center_y+1, "T") 
     ]}
-    
+
+
+    // offset_data is used for define a offset method for a certain piece id
+    this.offset_data = null
     if(this.piece_id=="O")
     {
         this.offset_data = [ [[0,0]], [[0,-1]], [[-1,-1]], [[-1,0]] ]
@@ -147,19 +147,18 @@ class Piece{
         [[0,0], [0,0], [0,0], [0,0], [0,0]],
         [[0,0], [-1,0], [-1,-1], [0,2], [-1,2]]
 		]
+		}
 	}
-	}
+
 
 	is_touching_ground(_board_controller){
-
+		//detect if a block can move downward by 1
 	    return (!(this.can_move_piece([0,-1], _board_controller)===true))
 	}
 
-
-
-
-
 	move_piece(_offset){
+		// _offset is a list like '[0, 1]'
+		// suppose the piece is guaranteed to be able to move
 		this.center_coordinate.x += _offset[0]
 		this.center_coordinate.y += _offset[1]
 		for (let block of this.blocks){
@@ -169,35 +168,35 @@ class Piece{
 	}
 
 	can_move_piece(_offset, _board_controller){
-		//这里传board还是boardcontroller有待商榷
+		// check the table, find out if the piece can be moved by offset
+		// returns: one of [true, 'edge_collide', 'block_collide']
 		let test_result = true
 		for (let block of this.blocks){
 			let temp_x = block.coordinate.x + _offset[0]
 			let temp_y = block.coordinate.y + _offset[1]
-			if (temp_x<0 || temp_y<0 || temp_x>=_board_controller.col || temp_y>=_board_controller.row){
+			// the target position is occuppied by walls or ground
+			if (temp_x < 0 || temp_y < 0 || temp_x >= _board_controller.col || temp_y >= _board_controller.row){
 				test_result = 'edge_collide'
-				//撞边
-
 				break
 			}
+			// the target position is occuppied by blocks
 			else if(_board_controller.board[temp_x][temp_y] != 0){
-				//[temp_x][temp_y]这里暂时不知道要不要反过来
 				test_result = 'block_collide'
 				break
 			}
-
 		}
 		return test_result
 	}
 	
 
 	try_offset(_old_rotation_index, _rotation_index, _board_controller){
-		let end_offset = [0,0]
+		let end_offset = [0, 0]
 		let move_possible = false
-		for(let try_idx=0; try_idx<5; try_idx++){
+		// the offset to be tried is calculated by "old offset - target offset"
+		for(let try_idx = 0; try_idx < 5; try_idx++){
 			let offset_val_1 = this.offset_data[_old_rotation_index][try_idx]
 	        let offset_val_2 = this.offset_data[_rotation_index][try_idx]
-	        end_offset =  [offset_val_1[0]-offset_val_2[0], offset_val_1[1]-offset_val_2[1]]
+	        end_offset =  [offset_val_1[0] - offset_val_2[0], offset_val_1[1] - offset_val_2[1]]
 
 	        if (this.can_move_piece(end_offset, _board_controller)===true){
 	            move_possible = true
@@ -205,12 +204,10 @@ class Piece{
         	}
 		}
 
-        
 	    if (move_possible){
 	        this.move_piece(end_offset)
 		}
-	    else{
-	    }
+
 	    return move_possible
 	}
 
@@ -219,6 +216,8 @@ class Piece{
 
 	rotate_piece(_is_clockwise, _should_offset, _board_controller){
 		let old_rotation_index = this.rotation_index
+
+		//create a circulating rotation idex among 0,1,2,3
 		if (_is_clockwise){
 		    this.rotation_index += 1
 		}
@@ -232,28 +231,33 @@ class Piece{
 		if (this.rotation_index==4){
 		    this.rotation_index = 0
 		}
-  
-    
-    
+    	
+    	// first, rotate the piece, then apply the offset if needed
 		for(let i=0; i<4; i++){
 		    this.blocks[i].rotate_block(this.blocks[0].coordinate, _is_clockwise)
 		}
 
-
-
 		if (_should_offset){
 		    let can_offset = this.try_offset(old_rotation_index, this.rotation_index, _board_controller)
-
-		    
 		    if (!can_offset){
 		    	this.rotate_piece(!_is_clockwise, false, _board_controller)
 		    }
 		}
-    
-    
 	}
+
+
 }
 
+class Settings{
+	constructor(){
+		this.DAS = 8
+    	this.ARR = 0
+    	this.soft_DAS = 0
+		this.soft_ARR = 0
+		this.gravity = 1 / 120
+		this.lock_delay = 40
+	}
+}
 
 
 class Pieces_Controller{
@@ -262,14 +266,14 @@ class Pieces_Controller{
 	this.ghost = []
 
 
-    this.DAS = 9
-    this.ARR = 0
+    this.DAS = new Settings().DAS
+    this.ARR = new Settings().ARR
     this.frame_timer = this.DAS
     this.timer_type = 0  //0, left, right
     
     this.soft_timer_type = 0 //0, soft
-    this.soft_DAS = 0
-    this.soft_ARR = 0
+    this.soft_DAS = new Settings().soft_DAS
+    this.soft_ARR = new Settings().soft_ARR
     this.soft_frame_timer = this.soft_DAS
 
     this.is_rotated_last_frame = 0
@@ -285,14 +289,14 @@ class Pieces_Controller{
     this.hold_once_already = false
     this.hold_queue = []
 
-    this.gravity = 1 / 120
+    this.gravity = new Settings().gravity
     if(this.gravity>=1){
     	this.gravity_timer = 1
     }else{
     	this.gravity_timer = 1 / this.gravity
     }
 
-    this.lock_delay = 40
+    this.lock_delay = new Settings().lock_delay
     this.lock_delay_timer = this.lock_delay
     this.lock_delay_is_counting = false
 	
@@ -1362,18 +1366,20 @@ function handle_event_tspin_occurred(e){
 document.addEventListener('event_board_vertically_bounce', handle_event_board_vertically_bounce, false);
 function handle_event_board_vertically_bounce(e){
 	var bounce = new Bounce();
+	let bounce_dist = 5
+	let animation_duration = 250
 bounce
   .translate({
     from: { x: 0, y: 0 },
-    to: { x: 0, y: 20 },
-    duration: 500,
+    to: { x: 0, y: bounce_dist },
+    duration: animation_duration,
     stiffness: 4,
     delay: 0
   })
   .translate({
     from: { x: 0, y: 0 },
-    to: { x: 0, y: -20 },
-    duration: 500,
+    to: { x: 0, y: -bounce_dist },
+    duration: animation_duration,
     stiffness: 4,
     delay: 100
   })
@@ -1382,15 +1388,15 @@ bounce
 bounce
   .translate({
     from: { x: 0, y: 0 },
-    to: { x: 0, y: 20 },
-    duration: 500,
+    to: { x: 0, y: bounce_dist },
+    duration: animation_duration,
     stiffness: 4,
     delay: 0
   })
   .translate({
     from: { x: 0, y: 0 },
-    to: { x: 0, y: -20 },
-    duration: 500,
+    to: { x: 0, y: -bounce_dist },
+    duration: animation_duration,
     stiffness: 4,
     delay: 100
   })
@@ -1400,15 +1406,15 @@ bounce
 bounce
   .translate({
     from: { x: 0, y: 0 },
-    to: { x: 0, y: 20 },
-    duration: 500,
+    to: { x: 0, y: bounce_dist },
+    duration: animation_duration,
     stiffness: 4,
     delay: 0
   })
   .translate({
     from: { x: 0, y: 0 },
-    to: { x: 0, y: -20 },
-    duration: 500,
+    to: { x: 0, y: -bounce_dist },
+    duration: animation_duration,
     stiffness: 4,
     delay: 100
   })
@@ -1437,7 +1443,7 @@ function handle_event_harddrop_animation(e){
 	rectangle.graphics.beginFill("white")
 	var rectangleCommand = rectangle.graphics.drawRect(_x, _y, _width, _length).command;
 	rectangle.addEventListener("tick", function() {
-		let decay_rate = 0.7
+		let decay_rate = 0.6
 		rectangleCommand.x+=((1-decay_rate)/2)*rectangleCommand.w;rectangleCommand.w *= decay_rate;
 		if(rectangleCommand.w<=1){
 			rectangleCommand.w=0
